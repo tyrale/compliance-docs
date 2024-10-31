@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost/api
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - elasticsearch
+      - redis
+    networks:
+      - app-network
+    volumes:
+      - uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/compliance-docs
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=5000
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=compliance-docs
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    ports:
+      - "9200:9200"
+    networks:
+      - app-network
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+  elasticsearch-data:
+  redis-data:
+  uploads:
