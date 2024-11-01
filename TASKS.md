@@ -74,7 +74,7 @@
   - [x] Authentication tests
     - [x] User controller tests
     - [x] Auth middleware tests
-  - [ ] Document management tests
+  - [x] Document management tests
   - [x] Search functionality tests
   - [ ] Section management tests
   - [ ] Annotation tests
@@ -123,7 +123,7 @@
 
 ## Current Priority Tasks:
 1. Continue backend testing
-   - [ ] Create document management tests
+   - [x] Create document management tests
    - [x] Create search functionality tests
    - [ ] Create section management tests
    - [ ] Create annotation tests
