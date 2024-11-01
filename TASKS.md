@@ -118,10 +118,11 @@
   - [ ] Alert system
 
 ## Documentation
-- [ ] Create API documentation
-  - [ ] API endpoints
-  - [ ] Request/Response formats
-  - [ ] Authentication
+- [x] Create API documentation
+  - [x] API endpoints
+  - [x] Request/Response formats
+  - [x] Authentication
+  - [x] Swagger UI setup
 - [ ] Write user manual
   - [ ] Installation guide
   - [ ] User guide
@@ -136,7 +137,7 @@
   - [ ] Troubleshooting guide
 
 ## Current Priority Tasks:
-1. Begin documentation
-   - [ ] Set up API documentation generator
-   - [ ] Create initial API docs
-   - [ ] Start user manual
+1. Write user manual
+   - [ ] Create installation guide
+   - [ ] Write user guide
+   - [ ] Create admin guide
