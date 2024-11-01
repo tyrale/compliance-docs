@@ -2,6 +2,12 @@ const asyncHandler = require('express-async-handler');
 const Section = require('../models/sectionModel');
 const Document = require('../models/documentModel');
 const { extractTextFromPDF } = require('../utils/pdfUtils');
+const {
+  generateSummary,
+  analyzeSentiment,
+  extractKeyPhrases,
+  classifyContent,
+} = require('../utils/nlpUtils');
 
 // @desc    Create section
 // @route   POST /api/documents/:documentId/sections
@@ -193,6 +199,7 @@ const deleteSection = asyncHandler(async (req, res) => {
 // @access  Private
 const generateSectionSummary = asyncHandler(async (req, res) => {
   const { documentId, id } = req.params;
+  const { maxLength } = req.query;
 
   const section = await Section.findOne({
     _id: id,
@@ -214,16 +221,164 @@ const generateSectionSummary = asyncHandler(async (req, res) => {
     throw new Error('Not authorized to generate summary for this section');
   }
 
-  // Generate summary using NLP or AI service
-  // This is a placeholder - implement actual summary generation
-  const summary = section.content
-    ? section.content.substring(0, 200) + '...'
-    : 'Summary not available';
+  try {
+    // Generate summary using NLP
+    const summaryResult = await generateSummary(section.content, maxLength || 200);
 
-  section.summary = summary;
-  await section.save();
+    // Get additional NLP insights
+    const [sentiment, keyPhrases, classification] = await Promise.all([
+      analyzeSentiment(section.content),
+      extractKeyPhrases(section.content),
+      classifyContent(section.content),
+    ]);
 
-  res.json({ summary });
+    // Update section with NLP results
+    section.summary = summaryResult.summary;
+    section.nlpMetadata = {
+      summaryConfidence: summaryResult.confidence,
+      sentiment,
+      keyPhrases,
+      classification,
+      lastAnalyzed: new Date(),
+    };
+    
+    await section.save();
+
+    res.json({
+      summary: summaryResult.summary,
+      metadata: section.nlpMetadata,
+    });
+  } catch (error) {
+    console.error('Error generating summary:', error);
+    res.status(500);
+    throw new Error('Failed to generate section summary');
+  }
+});
+
+// @desc    Get section NLP analysis
+// @route   GET /api/documents/:documentId/sections/:id/analysis
+// @access  Private
+const getSectionAnalysis = asyncHandler(async (req, res) => {
+  const { documentId, id } = req.params;
+
+  const section = await Section.findOne({
+    _id: id,
+    document: documentId,
+  });
+
+  if (!section) {
+    res.status(404);
+    throw new Error('Section not found');
+  }
+
+  // Check permissions
+  const document = await Document.findById(documentId);
+  if (
+    document.uploadedBy.toString() !== req.user._id.toString() &&
+    !document.permissions.readAccess.includes(req.user._id)
+  ) {
+    res.status(403);
+    throw new Error('Not authorized to view this section\'s analysis');
+  }
+
+  // If NLP metadata exists and is recent (less than 24 hours old), return it
+  if (
+    section.nlpMetadata &&
+    section.nlpMetadata.lastAnalyzed &&
+    new Date() - new Date(section.nlpMetadata.lastAnalyzed) < 24 * 60 * 60 * 1000
+  ) {
+    return res.json(section.nlpMetadata);
+  }
+
+  // Otherwise, generate new analysis
+  try {
+    const [sentiment, keyPhrases, classification] = await Promise.all([
+      analyzeSentiment(section.content),
+      extractKeyPhrases(section.content),
+      classifyContent(section.content),
+    ]);
+
+    const nlpMetadata = {
+      sentiment,
+      keyPhrases,
+      classification,
+      lastAnalyzed: new Date(),
+    };
+
+    // Update section with new analysis
+    section.nlpMetadata = nlpMetadata;
+    await section.save();
+
+    res.json(nlpMetadata);
+  } catch (error) {
+    console.error('Error analyzing section:', error);
+    res.status(500);
+    throw new Error('Failed to analyze section');
+  }
+});
+
+// @desc    Batch analyze sections
+// @route   POST /api/documents/:documentId/sections/analyze
+// @access  Private
+const batchAnalyzeSections = asyncHandler(async (req, res) => {
+  const { documentId } = req.params;
+  const { sectionIds } = req.body;
+
+  // Check document access
+  const document = await Document.findById(documentId);
+  if (!document) {
+    res.status(404);
+    throw new Error('Document not found');
+  }
+
+  if (
+    document.uploadedBy.toString() !== req.user._id.toString() &&
+    !document.permissions.readAccess.includes(req.user._id)
+  ) {
+    res.status(403);
+    throw new Error('Not authorized to analyze sections');
+  }
+
+  try {
+    const sections = await Section.find({
+      _id: { $in: sectionIds },
+      document: documentId,
+    });
+
+    const analysisResults = await Promise.all(
+      sections.map(async (section) => {
+        const [summary, sentiment, keyPhrases, classification] = await Promise.all([
+          generateSummary(section.content),
+          analyzeSentiment(section.content),
+          extractKeyPhrases(section.content),
+          classifyContent(section.content),
+        ]);
+
+        section.summary = summary.summary;
+        section.nlpMetadata = {
+          summaryConfidence: summary.confidence,
+          sentiment,
+          keyPhrases,
+          classification,
+          lastAnalyzed: new Date(),
+        };
+
+        await section.save();
+
+        return {
+          sectionId: section._id,
+          summary: summary.summary,
+          metadata: section.nlpMetadata,
+        };
+      })
+    );
+
+    res.json(analysisResults);
+  } catch (error) {
+    console.error('Error in batch analysis:', error);
+    res.status(500);
+    throw new Error('Failed to complete batch analysis');
+  }
 });
 
 module.exports = {
@@ -233,4 +388,6 @@ module.exports = {
   updateSection,
   deleteSection,
   generateSectionSummary,
+  getSectionAnalysis,
+  batchAnalyzeSections,
 };

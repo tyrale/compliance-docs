@@ -92,7 +92,10 @@
     - [x] Auth slice tests
     - [x] Document slice tests
     - [x] Search slice tests
-  - [ ] Integration tests
+  - [x] Integration tests
+    - [x] Authentication flow
+    - [x] Document management flow
+    - [x] Search flow
 - [ ] Write E2E tests
   - [ ] User flows
   - [ ] Document management flows
@@ -133,28 +136,12 @@
   - [ ] Troubleshooting guide
 
 ## Current Priority Tasks:
-1. Continue frontend testing
-   - [x] Configure React Testing Library
-   - [x] Set up test utilities
-   - [x] Create component tests
-     - [x] Core components (Layout, ProtectedRoute)
-     - [x] Authentication components
-     - [x] Document components
-       - [x] Documents list page
-       - [x] Document view page
-     - [x] Search components
-   - [x] Create Redux tests
-     - [x] Auth slice tests
-     - [x] Document slice tests
-     - [x] Search slice tests
-   - [ ] Integration tests
-
-2. Configure CI/CD pipeline
+1. Configure CI/CD pipeline
    - [ ] Set up GitHub Actions
    - [ ] Configure test automation
    - [ ] Set up deployment workflow
 
-3. Begin documentation
+2. Begin documentation
    - [ ] Set up API documentation generator
    - [ ] Create initial API docs
    - [ ] Start user manual
