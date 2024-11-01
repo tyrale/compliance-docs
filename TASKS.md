@@ -85,6 +85,8 @@
     - [x] Core components (Layout, ProtectedRoute)
     - [x] Authentication components
     - [ ] Document components
+      - [x] Documents list page
+      - [ ] Document view page
     - [ ] Search components
   - [ ] Create Redux tests
   - [ ] Integration tests
@@ -135,6 +137,8 @@
      - [x] Core components (Layout, ProtectedRoute)
      - [x] Authentication components
      - [ ] Document components
+       - [x] Documents list page
+       - [ ] Document view page
      - [ ] Search components
    - [ ] Create Redux tests
 
