@@ -123,10 +123,10 @@
   - [x] Request/Response formats
   - [x] Authentication
   - [x] Swagger UI setup
-- [ ] Write user manual
-  - [ ] Installation guide
-  - [ ] User guide
-  - [ ] Admin guide
+- [x] Write user manual
+  - [x] Installation guide
+  - [x] User guide
+  - [x] Admin guide
 - [ ] Document deployment process
   - [ ] Environment setup
   - [ ] Configuration
@@ -137,7 +137,13 @@
   - [ ] Troubleshooting guide
 
 ## Current Priority Tasks:
-1. Write user manual
-   - [ ] Create installation guide
-   - [ ] Write user guide
-   - [ ] Create admin guide
+1. Write E2E tests
+   - [ ] Set up Cypress
+   - [ ] Create user flow tests
+   - [ ] Create document management tests
+   - [ ] Create search flow tests
+
+2. Complete deployment documentation
+   - [ ] Document environment setup
+   - [ ] Document configuration steps
+   - [ ] Create deployment guide
