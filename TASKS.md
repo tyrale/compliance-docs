@@ -96,10 +96,11 @@
     - [x] Authentication flow
     - [x] Document management flow
     - [x] Search flow
-- [ ] Write E2E tests
-  - [ ] User flows
-  - [ ] Document management flows
-  - [ ] Search flows
+- [x] Write E2E tests
+  - [x] Set up Cypress
+  - [x] Create user flow tests
+  - [x] Create document management tests
+  - [x] Create search flow tests
 
 ## Deployment
 - [x] Set up Docker environment
@@ -137,13 +138,12 @@
   - [ ] Troubleshooting guide
 
 ## Current Priority Tasks:
-1. Write E2E tests
-   - [ ] Set up Cypress
-   - [ ] Create user flow tests
-   - [ ] Create document management tests
-   - [ ] Create search flow tests
-
-2. Complete deployment documentation
-   - [ ] Document environment setup
+1. Document deployment process
+   - [ ] Create environment setup guide
    - [ ] Document configuration steps
-   - [ ] Create deployment guide
+   - [ ] Write deployment procedures
+
+2. Create maintenance guide
+   - [ ] Document backup procedures
+   - [ ] Write update procedures
+   - [ ] Create troubleshooting guide
