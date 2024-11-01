@@ -82,6 +82,10 @@
   - [x] Configure React Testing Library
   - [x] Set up test utilities
   - [ ] Create component tests
+    - [x] Core components (Layout, ProtectedRoute)
+    - [ ] Authentication components
+    - [ ] Document components
+    - [ ] Search components
   - [ ] Create Redux tests
   - [ ] Integration tests
 - [ ] Write E2E tests
@@ -128,6 +132,10 @@
    - [x] Configure React Testing Library
    - [x] Set up test utilities
    - [ ] Create component tests
+     - [x] Core components (Layout, ProtectedRoute)
+     - [ ] Authentication components
+     - [ ] Document components
+     - [ ] Search components
    - [ ] Create Redux tests
 
 2. Configure CI/CD pipeline
