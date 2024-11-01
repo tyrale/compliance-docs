@@ -81,13 +81,13 @@
 - [ ] Write frontend tests
   - [x] Configure React Testing Library
   - [x] Set up test utilities
-  - [ ] Create component tests
+  - [x] Create component tests
     - [x] Core components (Layout, ProtectedRoute)
     - [x] Authentication components
     - [x] Document components
       - [x] Documents list page
       - [x] Document view page
-    - [ ] Search components
+    - [x] Search components
   - [ ] Create Redux tests
   - [ ] Integration tests
 - [ ] Write E2E tests
@@ -133,13 +133,13 @@
 1. Continue frontend testing
    - [x] Configure React Testing Library
    - [x] Set up test utilities
-   - [ ] Create component tests
+   - [x] Create component tests
      - [x] Core components (Layout, ProtectedRoute)
      - [x] Authentication components
      - [x] Document components
        - [x] Documents list page
        - [x] Document view page
-     - [ ] Search components
+     - [x] Search components
    - [ ] Create Redux tests
 
 2. Configure CI/CD pipeline
