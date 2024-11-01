@@ -90,7 +90,7 @@
     - [x] Search components
   - [ ] Create Redux tests
     - [x] Auth slice tests
-    - [ ] Document slice tests
+    - [x] Document slice tests
     - [ ] Search slice tests
   - [ ] Integration tests
 - [ ] Write E2E tests
@@ -145,7 +145,7 @@
      - [x] Search components
    - [ ] Create Redux tests
      - [x] Auth slice tests
-     - [ ] Document slice tests
+     - [x] Document slice tests
      - [ ] Search slice tests
 
 2. Configure CI/CD pipeline
