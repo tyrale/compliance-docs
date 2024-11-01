@@ -79,8 +79,10 @@
   - [x] Section management tests
   - [x] Annotation tests
 - [ ] Write frontend tests
-  - [ ] Component tests
-  - [ ] Redux tests
+  - [x] Configure React Testing Library
+  - [x] Set up test utilities
+  - [ ] Create component tests
+  - [ ] Create Redux tests
   - [ ] Integration tests
 - [ ] Write E2E tests
   - [ ] User flows
@@ -122,24 +124,18 @@
   - [ ] Troubleshooting guide
 
 ## Current Priority Tasks:
-1. Continue backend testing
-   - [x] Create document management tests
-   - [x] Create search functionality tests
-   - [x] Create section management tests
-   - [x] Create annotation tests
-
-2. Set up frontend testing
-   - [ ] Configure React Testing Library
-   - [ ] Set up test utilities
+1. Continue frontend testing
+   - [x] Configure React Testing Library
+   - [x] Set up test utilities
    - [ ] Create component tests
    - [ ] Create Redux tests
 
-3. Configure CI/CD pipeline
+2. Configure CI/CD pipeline
    - [ ] Set up GitHub Actions
    - [ ] Configure test automation
    - [ ] Set up deployment workflow
 
-4. Begin documentation
+3. Begin documentation
    - [ ] Set up API documentation generator
    - [ ] Create initial API docs
    - [ ] Start user manual
