@@ -89,6 +89,9 @@
       - [x] Document view page
     - [x] Search components
   - [ ] Create Redux tests
+    - [x] Auth slice tests
+    - [ ] Document slice tests
+    - [ ] Search slice tests
   - [ ] Integration tests
 - [ ] Write E2E tests
   - [ ] User flows
@@ -141,6 +144,9 @@
        - [x] Document view page
      - [x] Search components
    - [ ] Create Redux tests
+     - [x] Auth slice tests
+     - [ ] Document slice tests
+     - [ ] Search slice tests
 
 2. Configure CI/CD pipeline
    - [ ] Set up GitHub Actions
