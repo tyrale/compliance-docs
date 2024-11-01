@@ -83,7 +83,7 @@
   - [x] Set up test utilities
   - [ ] Create component tests
     - [x] Core components (Layout, ProtectedRoute)
-    - [ ] Authentication components
+    - [x] Authentication components
     - [ ] Document components
     - [ ] Search components
   - [ ] Create Redux tests
@@ -133,7 +133,7 @@
    - [x] Set up test utilities
    - [ ] Create component tests
      - [x] Core components (Layout, ProtectedRoute)
-     - [ ] Authentication components
+     - [x] Authentication components
      - [ ] Document components
      - [ ] Search components
    - [ ] Create Redux tests
