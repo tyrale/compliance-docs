@@ -78,7 +78,7 @@
   - [x] Search functionality tests
   - [x] Section management tests
   - [x] Annotation tests
-- [ ] Write frontend tests
+- [x] Write frontend tests
   - [x] Configure React Testing Library
   - [x] Set up test utilities
   - [x] Create component tests
@@ -88,10 +88,10 @@
       - [x] Documents list page
       - [x] Document view page
     - [x] Search components
-  - [ ] Create Redux tests
+  - [x] Create Redux tests
     - [x] Auth slice tests
     - [x] Document slice tests
-    - [ ] Search slice tests
+    - [x] Search slice tests
   - [ ] Integration tests
 - [ ] Write E2E tests
   - [ ] User flows
@@ -143,10 +143,11 @@
        - [x] Documents list page
        - [x] Document view page
      - [x] Search components
-   - [ ] Create Redux tests
+   - [x] Create Redux tests
      - [x] Auth slice tests
      - [x] Document slice tests
-     - [ ] Search slice tests
+     - [x] Search slice tests
+   - [ ] Integration tests
 
 2. Configure CI/CD pipeline
    - [ ] Set up GitHub Actions
