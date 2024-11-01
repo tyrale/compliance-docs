@@ -70,14 +70,14 @@
   - [x] Set up test environment
   - [x] Create test utilities
   - [x] Configure test database
-- [ ] Write backend tests
+- [x] Write backend tests
   - [x] Authentication tests
     - [x] User controller tests
     - [x] Auth middleware tests
   - [x] Document management tests
   - [x] Search functionality tests
   - [x] Section management tests
-  - [ ] Annotation tests
+  - [x] Annotation tests
 - [ ] Write frontend tests
   - [ ] Component tests
   - [ ] Redux tests
@@ -126,7 +126,7 @@
    - [x] Create document management tests
    - [x] Create search functionality tests
    - [x] Create section management tests
-   - [ ] Create annotation tests
+   - [x] Create annotation tests
 
 2. Set up frontend testing
    - [ ] Configure React Testing Library
