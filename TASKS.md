@@ -76,7 +76,7 @@
     - [x] Auth middleware tests
   - [x] Document management tests
   - [x] Search functionality tests
-  - [ ] Section management tests
+  - [x] Section management tests
   - [ ] Annotation tests
 - [ ] Write frontend tests
   - [ ] Component tests
@@ -125,7 +125,7 @@
 1. Continue backend testing
    - [x] Create document management tests
    - [x] Create search functionality tests
-   - [ ] Create section management tests
+   - [x] Create section management tests
    - [ ] Create annotation tests
 
 2. Set up frontend testing
