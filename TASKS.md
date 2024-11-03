@@ -1,5 +1,45 @@
 # Compliance Document Management System Tasks
 
+## Knowledge Base
+
+### Architectural Decisions
+- Backend: Node.js with Express
+- Frontend: React with Vite
+- Database: MongoDB
+- Search Engine: Elasticsearch
+- Authentication: JWT
+
+### Implementation Details
+- Document versioning using incremental version numbers
+- PDF parsing with custom utilities
+- Search optimization with NLP preprocessing
+- Containerized deployment with Docker
+- CI/CD through GitHub Actions
+
+### Dependencies and Versions
+- Node.js: 18.x
+- MongoDB: 6.0
+- Elasticsearch: 8.x
+- React: 18.x
+- Vite: 4.x
+
+### API Endpoints
+- /api/auth: Authentication endpoints
+- /api/documents: Document management
+- /api/search: Search functionality
+- /api/users: User management
+- /api/versions: Version control
+- /api/annotations: Annotation management
+- /api/sections: Section management
+
+## Task Implementation Format
+When implementing a new task, use the following format:
+```
+Check tasks.md:
+[paste relevant section]
+Please implement Task X: [task name]
+```
+
 ## Project Setup
 - [x] Choose technology stack
 - [x] Create initial project structure
@@ -150,3 +190,6 @@ Next steps could include:
 2. Planning future enhancements
 3. Setting up monitoring dashboards
 4. Conducting security audits
+5. Bug fixes and improvements
+   - [x] Fix search history display in Dashboard component
+   - [ ] Monitor and address any additional issues reported by users
