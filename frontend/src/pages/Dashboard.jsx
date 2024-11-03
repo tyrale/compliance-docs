@@ -36,13 +36,14 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [documentsData, searchHistoryData] = await Promise.all([
+        const [documentsData, searchHistoryResponse] = await Promise.all([
           documentService.getAllDocuments(),
           searchService.getSearchHistory(),
         ]);
 
         dispatch(setDocuments(documentsData));
-        setSearchHistory(searchHistoryData.slice(0, 5)); // Show only last 5 searches
+        // Access the history array from the response and take the first 5 items
+        setSearchHistory(searchHistoryResponse.history?.slice(0, 5) || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -152,7 +153,7 @@ const Dashboard = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={search.query}
-                    secondary={new Date(search.timestamp).toLocaleDateString()}
+                    secondary={new Date(search.createdAt).toLocaleDateString()}
                   />
                   <ListItemIcon>
                     <History />
