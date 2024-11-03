@@ -192,4 +192,5 @@ Next steps could include:
 4. Conducting security audits
 5. Bug fixes and improvements
    - [x] Fix search history display in Dashboard component
+   - [x] Fix document upload timeout by increasing frontend timeout to match backend's 5-minute setting
    - [ ] Monitor and address any additional issues reported by users
