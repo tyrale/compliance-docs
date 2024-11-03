@@ -12,10 +12,19 @@ const documentService = {
     return response.data;
   },
 
-  uploadDocument: async (formData) => {
+  uploadDocument: async (formData, onProgress) => {
     const response = await api.post('/documents', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+      },
+      timeout: 300000, // 5 minute timeout to match backend
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        if (onProgress) {
+          onProgress(percentCompleted);
+        }
       },
     });
     return response.data;
@@ -82,7 +91,7 @@ const documentService = {
 
   createAnnotation: async (documentId, annotationData) => {
     const response = await api.post(
-      `/documents/${documentId}/annotations`,
+      `//documents/${documentId}/annotations`,
       annotationData
     );
     return response.data;
