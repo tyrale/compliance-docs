@@ -1,23 +1,31 @@
 # Summary
 type: javascript
-size: 2.0KB
-purpose: This file contains the API service for interacting with the backend server, providing functions to fetch, upload, update, and delete documents.
+size: 1.8KB
+purpose: This file provides a set of API functions to interact with the backend server, handling user authentication, document management, and search functionality.
 
 ## Structure
-The file defines several functions:
-- `api`: a configuration object for the Axios HTTP client, which sets the base URL for the API.
-- `getDocument(id)`: fetches a single document by its ID.
-- `getDocuments()`: fetches a list of all documents.
-- `uploadDocument(formData)`: uploads a new document.
-- `updateDocument(id, data)`: updates an existing document by its ID.
-- `deleteDocument(id)`: deletes a document by its ID.
+The file exports several functions that interact with the backend API:
+- `login(credentials)`: Logs in a user with the provided credentials.
+- `register(userData)`: Registers a new user with the provided data.
+- `updateProfile(userData, token)`: Updates the user's profile with the provided data.
+- `getDocuments()`: Retrieves a list of all documents.
+- `getDocument(id)`: Retrieves a specific document by its ID.
+- `uploadDocument(formData)`: Uploads a new document.
+- `updateDocument(id, data)`: Updates an existing document.
+- `deleteDocument(id)`: Deletes a document.
+- `searchDocuments(query)`: Searches for documents based on the provided query.
+- `getSearchHistory()`: Retrieves the user's search history.
+- `getVersions(documentId)`: Retrieves the versions of a specific document.
+- `createVersion(documentId, versionData)`: Creates a new version of a document.
+- `getSections(documentId)`: Retrieves the sections of a specific document.
+- `createSection(documentId, sectionData)`: Creates a new section for a document.
+- `updateSection(sectionId, sectionData)`: Updates an existing section.
+- `deleteSection(sectionId)`: Deletes a section.
 
 ## Critical Details
 - Ports: none found
 - Environment Variables: none found
-- API Endpoints:
-  - `/documents/{id}`: GET, PUT, DELETE
-  - `/documents`: GET, POST
+- API Endpoints: The file interacts with various API endpoints, including `/users/login`, `/users/register`, `/users/profile`, `/documents`, `/documents/upload`, `/search`, `/search/history`, `/versions`, `/sections`.
 
 ## Important Notes
-This file is responsible for handling all API interactions in the frontend application, providing a consistent interface for fetching, creating, updating, and deleting documents.
+The file provides a centralized place to manage all API interactions, making it easier to maintain and update the application's communication with the backend server.

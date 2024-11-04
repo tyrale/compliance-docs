@@ -9,10 +9,10 @@ const {
   compareVersions,
 } = require('../controllers/versionController');
 const { protect } = require('../middleware/authMiddleware');
-const { multerUpload } = require('../middleware/uploadMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 router.route('/')
-  .post(protect, multerUpload.single('file'), createVersion)
+  .post(protect, upload.single('file'), createVersion)
   .get(protect, getVersions);
 
 router.route('/compare')

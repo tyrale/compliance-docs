@@ -1,14 +1,10 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/Layout';
-import ProtectedRoute from '../components/ProtectedRoute';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
 import Documents from '../pages/Documents';
 import DocumentView from '../pages/DocumentView';
 import Search from '../pages/Search';
-import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
+import Dashboard from '../pages/Dashboard';
 
 const router = createBrowserRouter([
   {
@@ -16,56 +12,20 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/dashboard" replace />,
+        path: '/',
+        element: <Dashboard />,
       },
       {
-        path: 'login',
-        element: <Login />,
+        path: '/documents',
+        element: <Documents />,
       },
       {
-        path: 'register',
-        element: <Register />,
+        path: '/documents/:id',
+        element: <DocumentView />,
       },
       {
-        path: 'dashboard',
-        element: (
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'documents',
-        element: (
-          <ProtectedRoute>
-            <Documents />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'documents/:id',
-        element: (
-          <ProtectedRoute>
-            <DocumentView />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'search',
-        element: (
-          <ProtectedRoute>
-            <Search />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'profile',
-        element: (
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        ),
+        path: '/search',
+        element: <Search />,
       },
       {
         path: '*',

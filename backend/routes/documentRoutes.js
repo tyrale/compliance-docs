@@ -1,22 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const {
-  uploadDocument,
   getDocuments,
-  getDocumentById,
+  getDocument,
+  createDocument,
   updateDocument,
   deleteDocument,
 } = require('../controllers/documentController');
-const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 router.route('/')
-  .get(protect, getDocuments)
-  .post(protect, upload.single('file'), uploadDocument);
+  .get(getDocuments)
+  .post(upload.single('file'), createDocument);
 
 router.route('/:id')
-  .get(protect, getDocumentById)
-  .put(protect, updateDocument)
-  .delete(protect, deleteDocument);
+  .get(getDocument)
+  .put(updateDocument)
+  .delete(deleteDocument);
 
 module.exports = router;

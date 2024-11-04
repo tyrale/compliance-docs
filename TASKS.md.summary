@@ -1,0 +1,20 @@
+# Summary
+type: markdown
+size: 1.4KB
+purpose: Compliance Document Management System project status document
+
+## Structure
+The document is divided into several sections:
+- Critical Info
+- Active Issues
+- Project Status Overview (with sections for Done, In Progress, and Pending tasks)
+- Next Actions
+- API Endpoints
+
+## Critical Details
+- Ports: none found
+- Environment Variables: none found
+- API Endpoints: none found
+
+## Important Notes
+The document provides an overview of the project status, including completed tasks, work in progress, and pending items. It also includes a section for next actions and API endpoints.

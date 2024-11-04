@@ -1,10 +1,10 @@
 # Summary
 type: javascript
 size: 1.5KB
-purpose: This file sets up a backend server using Express.js and listens for incoming requests on a specified port.
+purpose: This file sets up the backend server for the application.
 
 ## Structure
-The file sets up an Express.js application, configures the port to listen on, and starts the server. It also includes a single function that logs a message when the server starts listening.
+The file sets up an Express.js application and configures middleware for handling errors and listening for incoming requests on a specified port.
 
 ## Critical Details
 - Ports: none found
@@ -12,4 +12,4 @@ The file sets up an Express.js application, configures the port to listen on, an
 - API Endpoints: none found
 
 ## Important Notes
-The server will listen on the port specified by the `PORT` environment variable. Developers should ensure that this variable is set correctly before running the server.
+The server listens for incoming requests on the port specified by the `PORT` environment variable.

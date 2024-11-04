@@ -1,18 +1,17 @@
 # Summary
 type: javascript
-size: 5.5KB
-purpose: This file contains the controller functions for handling document-related operations in the backend application.
+size: 2.2KB
+purpose: This file contains the controller functions for handling CRUD operations on documents.
 
 ## Structure
 The file defines the following functions:
-- `uploadDocument`: Handles the upload of a new document.
 - `getDocuments`: Retrieves a list of documents.
-- `getDocumentById`: Retrieves a specific document by its ID.
-- `getDocumentContent`: Retrieves the content of a specific document.
-- `updateDocument`: Updates the details of a specific document.
-- `deleteDocument`: Deletes a specific document.
+- `getDocument`: Retrieves a specific document.
+- `createDocument`: Creates a new document.
+- `updateDocument`: Updates an existing document.
+- `deleteDocument`: Deletes a document.
 
-These functions are defined using the `asyncHandler` utility, which provides error handling for asynchronous operations.
+These functions are defined as asynchronous handlers using the `asyncHandler` middleware.
 
 ## Critical Details
 - Ports: none found

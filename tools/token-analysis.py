@@ -1,4 +1,4 @@
-# tools/analyze_token_savings.py
+# tools/token-analysis.py
 
 import re
 from datetime import datetime, timedelta
@@ -12,8 +12,14 @@ class TokenAnalyzer:
         self.data = self.parse_log_file()
         
     def parse_log_file(self):
-        """Parse the token savings log file."""
-        data = defaultdict(list)
+        """Parse the token savings log file and organize by date."""
+        daily_data = defaultdict(lambda: {
+            'files': set(),
+            'total_original': 0,
+            'total_summary': 0,
+            'interactions': 0
+        })
+        
         try:
             with open(self.log_file, 'r') as f:
                 content = f.read()
@@ -31,97 +37,111 @@ class TokenAnalyzer:
                 
                 date = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").date()
                 
-                data[file_path].append({
-                    'date': date,
-                    'original': original,
-                    'summary': summary,
-                    'savings': original - summary
-                })
+                # Aggregate by date
+                daily_data[date]['files'].add(file_path)
+                daily_data[date]['total_original'] += original
+                daily_data[date]['total_summary'] += summary
+                daily_data[date]['interactions'] += 1
                 
         except FileNotFoundError:
             print("No log file found.")
             
-        return data
+        return daily_data
         
-    def calculate_cumulative_savings(self, reads_per_file=5):
-        """Calculate cumulative token savings over time."""
-        total_original = 0
-        total_with_summaries = 0
-        files_analyzed = len(self.data)
+    def calculate_daily_savings(self, average_reads_per_file=5):
+        """Calculate savings for each day."""
+        daily_stats = {}
         
-        for file_path, entries in self.data.items():
-            # Use the latest entry for each file
-            latest = entries[-1]
-            
+        for date, data in self.data.items():
             # Traditional approach (reading full file each time)
-            total_original += latest['original'] * reads_per_file
+            traditional_cost = data['total_original'] * average_reads_per_file * len(data['files'])
             
             # With summaries approach
             # First read: original + summary
             # Subsequent reads: just summary
-            total_with_summaries += latest['original'] + (latest['summary'] * (reads_per_file - 1))
-        
-        savings = total_original - total_with_summaries
-        savings_percentage = (savings / total_original * 100) if total_original > 0 else 0
-        cost_savings = savings * 15 / 1_000_000  # $15 per million tokens
-        
-        return {
-            'files_analyzed': files_analyzed,
-            'total_original_tokens': total_original,
-            'total_with_summaries': total_with_summaries,
-            'total_tokens_saved': savings,
-            'savings_percentage': savings_percentage,
-            'estimated_cost_savings': cost_savings,
-            'reads_per_file': reads_per_file
-        }
-    
-    def generate_report(self, reads_per_file=5):
-        """Generate a comprehensive savings report."""
-        stats = self.calculate_cumulative_savings(reads_per_file)
-        
-        report = f"""
-Token Usage Analysis Report
-==========================
-Files Analyzed: {stats['files_analyzed']}
-Assumed Reads Per File: {stats['reads_per_file']}
-
-Traditional Approach (No Summaries):
-- Total Tokens: {stats['total_original_tokens']:,}
-- Estimated Cost: ${(stats['total_original_tokens'] * 15 / 1_000_000):.2f}
-
-With Summaries Approach:
-- Total Tokens: {stats['total_with_summaries']:,}
-- Estimated Cost: ${(stats['total_with_summaries'] * 15 / 1_000_000):.2f}
-
-Savings Analysis:
-- Tokens Saved: {stats['total_tokens_saved']:,}
-- Savings Percentage: {stats['savings_percentage']:.1f}%
-- Estimated Cost Savings: ${stats['estimated_cost_savings']:.2f}
-
-File Details:
-"""
-        
-        # Add details for each file
-        for file_path, entries in self.data.items():
-            latest = entries[-1]
-            savings_per_read = latest['original'] - latest['summary']
-            break_even_reads = latest['original'] / savings_per_read if savings_per_read > 0 else 0
+            summary_cost = (data['total_original'] + 
+                          (data['total_summary'] * (average_reads_per_file - 1))) * len(data['files'])
             
-            report += f"\n{file_path}:"
-            report += f"\n- Original Size: {latest['original']:,} tokens"
-            report += f"\n- Summary Size: {latest['summary']:,} tokens"
-            report += f"\n- Savings Per Read: {savings_per_read:,} tokens"
-            report += f"\n- Breaks Even After: {break_even_reads:.1f} reads\n"
+            savings = traditional_cost - summary_cost
+            savings_percentage = (savings / traditional_cost * 100) if traditional_cost > 0 else 0
+            cost_savings = savings * 15 / 1_000_000  # $15 per million tokens
+            
+            daily_stats[date] = {
+                'files_processed': len(data['files']),
+                'interactions': data['interactions'],
+                'traditional_tokens': traditional_cost,
+                'summary_tokens': summary_cost,
+                'tokens_saved': savings,
+                'savings_percentage': savings_percentage,
+                'cost_savings': cost_savings
+            }
+            
+        return daily_stats
+    
+    def project_monthly_savings(self, daily_stats):
+        """Project monthly savings based on current usage patterns."""
+        if not daily_stats:
+            return None
+            
+        # Calculate averages
+        total_days = len(daily_stats)
+        avg_daily_savings = sum(day['tokens_saved'] for day in daily_stats.values()) / total_days
+        avg_daily_cost_savings = sum(day['cost_savings'] for day in daily_stats.values()) / total_days
+        avg_files_per_day = sum(day['files_processed'] for day in daily_stats.values()) / total_days
+        
+        monthly_projection = {
+            'working_days': 22,  # Typical working days in a month
+            'projected_files': avg_files_per_day * 22,
+            'projected_token_savings': avg_daily_savings * 22,
+            'projected_cost_savings': avg_daily_cost_savings * 22,
+            'avg_files_per_day': avg_files_per_day,
+            'avg_daily_token_savings': avg_daily_savings,
+            'avg_daily_cost_savings': avg_daily_cost_savings
+        }
+        
+        return monthly_projection
+    
+    def generate_daily_report(self):
+        """Generate a comprehensive daily savings report."""
+        daily_stats = self.calculate_daily_savings()
+        monthly_projection = self.project_monthly_savings(daily_stats)
+        
+        report = """
+Daily Token Usage Analysis Report
+===============================
+"""
+        # Daily breakdown
+        for date, stats in sorted(daily_stats.items()):
+            report += f"\nDate: {date}"
+            report += f"\n- Files Processed: {stats['files_processed']}"
+            report += f"\n- Total Interactions: {stats['interactions']}"
+            report += f"\n- Traditional Approach Tokens: {stats['traditional_tokens']:,}"
+            report += f"\n- With Summaries Tokens: {stats['summary_tokens']:,}"
+            report += f"\n- Tokens Saved: {stats['tokens_saved']:,}"
+            report += f"\n- Savings Percentage: {stats['savings_percentage']:.1f}%"
+            report += f"\n- Cost Savings: ${stats['cost_savings']:.2f}"
+            report += "\n" + "-" * 50
+            
+        if monthly_projection:
+            report += f"""
+\nMonthly Projections (Based on Current Usage)
+=========================================
+Average Daily Stats:
+- Files Processed: {monthly_projection['avg_files_per_day']:.1f}
+- Token Savings: {monthly_projection['avg_daily_token_savings']:,.0f}
+- Cost Savings: ${monthly_projection['avg_daily_cost_savings']:.2f}
+
+Monthly Projections (22 working days):
+- Total Files: {monthly_projection['projected_files']:,.0f}
+- Total Token Savings: {monthly_projection['projected_token_savings']:,.0f}
+- Total Cost Savings: ${monthly_projection['projected_cost_savings']:.2f}
+"""
         
         return report
 
 def main():
     analyzer = TokenAnalyzer()
-    
-    # Generate report with different read scenarios
-    for reads in [3, 5, 10]:
-        print(f"\nScenario: {reads} reads per file")
-        print(analyzer.generate_report(reads))
+    print(analyzer.generate_daily_report())
 
 if __name__ == '__main__':
     main()
