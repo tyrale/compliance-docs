@@ -13,11 +13,12 @@ import tiktoken
 MIN_FILE_SIZE = 1024  # 1KB minimum
 
 class TokenTracker:
+    # Class-level cache that persists between instances
+    _recent_logs = set()
+    
     def __init__(self):
         self.encoder = tiktoken.get_encoding("cl100k_base")
         self.log_file = "token_savings.log"
-        # Add cache for recent logs
-        self.recent_logs = set()
         
     def count_tokens(self, text):
         """Count tokens in a piece of text"""
@@ -31,14 +32,14 @@ class TokenTracker:
         log_key = f"{timestamp}-{file_path}-{original_tokens}-{summary_tokens}"
         
         # Skip if we've logged this exact entry recently
-        if log_key in self.recent_logs:
+        if log_key in TokenTracker._recent_logs:
             return
             
-        self.recent_logs.add(log_key)
+        TokenTracker._recent_logs.add(log_key)
         
         # Keep cache size reasonable
-        if len(self.recent_logs) > 100:
-            self.recent_logs.clear()
+        if len(TokenTracker._recent_logs) > 100:
+            TokenTracker._recent_logs.clear()
         
         savings_per_read = original_tokens - summary_tokens
         
