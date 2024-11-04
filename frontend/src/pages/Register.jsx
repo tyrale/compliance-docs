@@ -16,7 +16,7 @@ import authService from '../services/authService';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -28,8 +28,8 @@ const Register = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
     }
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -68,7 +68,7 @@ const Register = () => {
 
     try {
       const data = await authService.register({
-        name: formData.name,
+        username: formData.username,
         email: formData.email,
         password: formData.password,
       });
@@ -117,14 +117,14 @@ const Register = () => {
                 <TextField
                   required
                   fullWidth
-                  id="name"
-                  label="Full Name"
-                  name="name"
-                  autoComplete="name"
-                  value={formData.name}
+                  id="username"
+                  label="Username"
+                  name="username"
+                  autoComplete="username"
+                  value={formData.username}
                   onChange={handleChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
+                  error={!!errors.username}
+                  helperText={errors.username}
                 />
               </Grid>
               <Grid item xs={12}>

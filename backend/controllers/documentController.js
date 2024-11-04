@@ -52,7 +52,11 @@ const uploadDocument = asyncHandler(async (req, res) => {
   document.currentVersion = version._id;
   await document.save();
 
-  res.status(201).json(document);
+  // Add fileUrl to response
+  const documentObj = document.toObject();
+  documentObj.fileUrl = `/uploads/${req.file.filename}`;
+
+  res.status(201).json(documentObj);
 });
 
 // @desc    Get all documents
@@ -68,7 +72,16 @@ const getDocuments = asyncHandler(async (req, res) => {
     .populate('currentVersion')
     .populate('uploadedBy', 'username');
 
-  res.json(documents);
+  // Add fileUrl to each document
+  const documentsWithUrls = documents.map(doc => {
+    const docObj = doc.toObject();
+    if (doc.fileName) {
+      docObj.fileUrl = `/uploads/${doc.fileName}`;
+    }
+    return docObj;
+  });
+
+  res.json(documentsWithUrls);
 });
 
 // @desc    Get document by ID
@@ -95,7 +108,13 @@ const getDocumentById = asyncHandler(async (req, res) => {
     throw new Error('Not authorized to access this document');
   }
 
-  res.json(document);
+  // Add fileUrl to response
+  const documentObj = document.toObject();
+  if (document.fileName) {
+    documentObj.fileUrl = `/uploads/${document.fileName}`;
+  }
+
+  res.json(documentObj);
 });
 
 // @desc    Update document
@@ -126,7 +145,13 @@ const updateDocument = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  res.json(updatedDocument);
+  // Add fileUrl to response
+  const documentObj = updatedDocument.toObject();
+  if (updatedDocument.fileName) {
+    documentObj.fileUrl = `/uploads/${updatedDocument.fileName}`;
+  }
+
+  res.json(documentObj);
 });
 
 // @desc    Delete document
@@ -159,7 +184,7 @@ const deleteDocument = asyncHandler(async (req, res) => {
   // Delete all related data
   await Version.deleteMany({ document: document._id });
   await Section.deleteMany({ document: document._id });
-  await document.remove();
+  await Document.deleteOne({ _id: document._id });  // Changed from document.remove()
 
   res.json({ message: 'Document removed' });
 });

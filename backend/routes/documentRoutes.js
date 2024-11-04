@@ -8,7 +8,7 @@ const {
   deleteDocument,
 } = require('../controllers/documentController');
 const { protect } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { enhancedUpload } = require('../middleware/uploadMiddleware');
 
 // Import sub-routes
 const annotationRoutes = require('./annotationRoutes');
@@ -23,7 +23,7 @@ router.use('/:documentId/versions', versionRoutes);
 // Document routes
 router
   .route('/')
-  .post(protect, upload.single('file'), uploadDocument)
+  .post(protect, enhancedUpload, uploadDocument)
   .get(protect, getDocuments);
 
 router

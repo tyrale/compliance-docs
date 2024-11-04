@@ -1,5 +1,10 @@
 import api from './api';
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const documentService = {
   // Document CRUD operations
   getAllDocuments: async () => {
@@ -13,21 +18,54 @@ const documentService = {
   },
 
   uploadDocument: async (formData, onProgress) => {
-    const response = await api.post('/documents', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      timeout: 300000, // 5 minute timeout to match backend
-      onUploadProgress: (progressEvent) => {
-        const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        if (onProgress) {
-          onProgress(percentCompleted);
+    let attempt = 0;
+    
+    while (attempt < MAX_RETRIES) {
+      try {
+        const response = await api.post('/documents', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 300000, // 5 minute timeout to match backend
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            if (onProgress) {
+              onProgress(percentCompleted);
+            }
+          },
+          // Increase max content length and request size
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          // Enable keep-alive
+          keepAlive: true,
+          // Enable compression
+          decompress: true,
+        });
+        return response.data;
+      } catch (error) {
+        attempt++;
+        
+        // If we've exhausted all retries, throw the error
+        if (attempt === MAX_RETRIES) {
+          throw error;
         }
-      },
-    });
-    return response.data;
+
+        // If it's a timeout or network error, wait and retry
+        if (error.code === 'ECONNABORTED' || error.message.includes('network')) {
+          await sleep(RETRY_DELAY);
+          // Reset progress before retry
+          if (onProgress) {
+            onProgress(0);
+          }
+          continue;
+        }
+
+        // For other errors, throw immediately
+        throw error;
+      }
+    }
   },
 
   updateDocument: async (id, documentData) => {
@@ -42,32 +80,35 @@ const documentService = {
 
   // Version control
   getVersions: async (documentId) => {
-    const response = await api.get(`/versions/${documentId}`);
+    const response = await api.get(`/documents/${documentId}/versions`);
     return response.data;
   },
 
   createVersion: async (documentId, formData) => {
-    const response = await api.post(`/versions/${documentId}`, formData, {
+    const response = await api.post(`/documents/${documentId}/versions`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 300000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
     });
     return response.data;
   },
 
   getVersion: async (documentId, versionId) => {
-    const response = await api.get(`/versions/${documentId}/${versionId}`);
+    const response = await api.get(`/documents/${documentId}/versions/${versionId}`);
     return response.data;
   },
 
   setCurrentVersion: async (documentId, versionId) => {
-    const response = await api.put(`/versions/${documentId}/current/${versionId}`);
+    const response = await api.put(`/documents/${documentId}/versions/${versionId}/current`);
     return response.data;
   },
 
   compareVersions: async (documentId, version1Id, version2Id) => {
     const response = await api.get(
-      `/versions/${documentId}/compare/${version1Id}/${version2Id}`
+      `/documents/${documentId}/versions/compare?version1Id=${version1Id}&version2Id=${version2Id}`
     );
     return response.data;
   },
@@ -91,7 +132,7 @@ const documentService = {
 
   createAnnotation: async (documentId, annotationData) => {
     const response = await api.post(
-      `//documents/${documentId}/annotations`,
+      `/documents/${documentId}/annotations`,
       annotationData
     );
     return response.data;

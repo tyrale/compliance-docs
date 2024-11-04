@@ -1,6 +1,9 @@
 # Compliance Document Management System Tasks
 
 ## Knowledge Base
+### Testing account
+email: tyralebloomfield@gmail.com
+password: 1234567890
 
 ### Architectural Decisions
 - Backend: Node.js with Express
@@ -177,20 +180,37 @@ Please implement Task X: [task name]
   - [x] Update procedures
   - [x] Troubleshooting guide
 
-## Project Complete! 🎉
-
-All tasks have been completed. The Compliance Documents Management System is now:
-- Fully implemented
-- Thoroughly tested
-- Well documented
-- Ready for production use
+## Missing Features from Original Requirements
+- [ ] Question Answering System
+  - [ ] Implement NLP-based question answering
+  - [ ] Add answer source citation
+  - [ ] Integrate with search results
+- [ ] HTML Document Support
+  - [ ] Add HTML document parsing
+  - [ ] Handle HTML-specific formatting
+  - [ ] Extract text and structure
+- [ ] Admin Document Fetching
+  - [ ] Add URL-based document fetching
+  - [ ] Implement automatic document retrieval
+  - [ ] Add URL validation and security checks
+- [ ] Document View Enhancements
+  - [ ] Create split-view interface
+  - [ ] Add chat interaction panel
+  - [ ] Implement document position jumping
+- [ ] Machine-Generated Summaries
+  - [ ] Add document summarization
+  - [ ] Implement section-level summaries
+  - [ ] Add summary customization options
 
 Next steps could include:
-1. Gathering user feedback
-2. Planning future enhancements
-3. Setting up monitoring dashboards
-4. Conducting security audits
-5. Bug fixes and improvements
+1. Implementing missing features from original requirements
+2. Gathering user feedback
+3. Planning future enhancements
+4. Setting up monitoring dashboards
+5. Conducting security audits
+6. Bug fixes and improvements
    - [x] Fix search history display in Dashboard component
    - [x] Fix document upload timeout by increasing frontend timeout to match backend's 5-minute setting
    - [ ] Monitor and address any additional issues reported by users
+   - [ ] Implement missing features listed above
+   - [ ] Port miss match between front and backend env's conslidate and ensure these are matching
