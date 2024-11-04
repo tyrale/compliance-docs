@@ -30,6 +30,15 @@ const DocumentView = () => {
     setNumPages(numPages);
   };
 
+  // Construct the full URL for the PDF file
+  const getPdfUrl = (fileUrl) => {
+    if (!fileUrl) return null;
+    // If it's already a full URL, return as is
+    if (fileUrl.startsWith('http')) return fileUrl;
+    // Otherwise, construct the full URL using the backend URL
+    return `http://localhost:5001${fileUrl}`;
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Grid container spacing={3}>
@@ -38,7 +47,7 @@ const DocumentView = () => {
             <Box sx={{ height: '80vh', overflow: 'auto' }}>
               {document && (
                 <Document
-                  file={document.fileUrl}
+                  file={getPdfUrl(document.fileUrl)}
                   onLoadSuccess={onDocumentLoadSuccess}
                   loading="Loading PDF..."
                 >
