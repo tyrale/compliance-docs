@@ -13,6 +13,7 @@ import {
   ListItemIcon,
   Box,
   CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   Description,
@@ -32,20 +33,30 @@ const Dashboard = () => {
   );
   const [searchHistory, setSearchHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      try {
-        const [documentsData, searchHistoryResponse] = await Promise.all([
-          documentService.getAllDocuments(),
-          searchService.getSearchHistory(),
-        ]);
+      setError(null);
+      setIsLoading(true);
 
+      try {
+        // Fetch documents first
+        const documentsData = await documentService.getAllDocuments();
         dispatch(setDocuments(documentsData));
-        // Access the history array from the response and take the first 5 items
-        setSearchHistory(searchHistoryResponse.history?.slice(0, 5) || []);
+
+        try {
+          // Then fetch search history
+          const searchHistoryResponse = await searchService.getSearchHistory();
+          setSearchHistory(searchHistoryResponse.history?.slice(0, 5) || []);
+        } catch (searchError) {
+          console.error('Error fetching search history:', searchError);
+          // Don't fail completely if search history fails
+          setSearchHistory([]);
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setError('Failed to load dashboard data. Please try refreshing the page.');
       } finally {
         setIsLoading(false);
       }
@@ -69,6 +80,12 @@ const Dashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
       <Grid container spacing={3}>
         {/* Welcome Section */}
         <Grid item xs={12}>
