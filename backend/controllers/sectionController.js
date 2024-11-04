@@ -9,7 +9,7 @@ const {
   classifyContent,
 } = require('../utils/nlpUtils');
 
-// @desc    Create section
+// @desc    Create section test
 // @route   POST /api/documents/:documentId/sections
 // @access  Private
 const createSection = asyncHandler(async (req, res) => {
