@@ -1,4 +1,4 @@
-# tools/project-summarizer.py testing
+# tools/project-summarizer.py tested
 
 import os
 import ast
