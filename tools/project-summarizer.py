@@ -7,8 +7,38 @@ import logging
 from anthropic import Anthropic
 import json
 import re
+from datetime import datetime
+import tiktoken
 
 MIN_FILE_SIZE = 1024  # 1KB minimum
+
+class TokenTracker:
+    def __init__(self):
+        self.encoder = tiktoken.encoding_for_model("claude-3-haiku-20240307")
+        self.log_file = "token_savings.log"
+        
+    def count_tokens(self, text):
+        """Count tokens in a piece of text"""
+        return len(self.encoder.encode(text))
+    
+    def log_summary(self, file_path, original_tokens, summary_tokens):
+        """Log token counts and savings"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        savings_per_read = original_tokens - summary_tokens
+        
+        log_entry = (
+            f"\n[{timestamp}] {file_path}\n"
+            f"Original file tokens: {original_tokens}\n"
+            f"Summary tokens: {summary_tokens}\n"
+            f"Savings per read: {savings_per_read}\n"
+            f"Break-even after {original_tokens/savings_per_read:.1f} reads\n"
+            f"-" * 50
+        )
+        
+        with open(self.log_file, 'a') as f:
+            f.write(log_entry)
+        
+        print(f"Token analysis saved to {self.log_file}")
 
 class CodeSummaryGenerator:
     def __init__(self):
@@ -175,9 +205,17 @@ class CodeSummaryGenerator:
         }
 
     def generate_summary(self, file_path):
-        """Generates a summary using Claude."""
-        analysis = self.analyze_file(file_path)
+        """Generates a summary using Claude with token tracking."""
+        tracker = TokenTracker()
         
+        # Read and analyze file
+        with open(file_path, 'r') as f:
+            original_content = f.read()
+        
+        # Count tokens in original file
+        original_tokens = tracker.count_tokens(original_content)
+        
+        analysis = self.analyze_file(file_path)
         file_size = os.path.getsize(file_path)
         file_size_kb = file_size / 1024
         
@@ -215,7 +253,15 @@ class CodeSummaryGenerator:
             messages=[{"role": "user", "content": prompt}]
         )
         
-        return response.content[0].text
+        summary = response.content[0].text
+        
+        # Count tokens in summary
+        summary_tokens = tracker.count_tokens(summary)
+        
+        # Log the token analysis
+        tracker.log_summary(file_path, original_tokens, summary_tokens)
+        
+        return summary
 
 def update_summary(file_path):
     """Updates or creates summary for a single file if it meets size criteria."""
