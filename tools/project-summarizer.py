@@ -1,4 +1,3 @@
-# First part of your file up to the TokenAnalyzer class (lines 1-341)
 import os
 import ast
 from pathlib import Path
@@ -14,7 +13,7 @@ MIN_FILE_SIZE = 1024  # 1KB minimum
 class TokenTracker:
     def __init__(self):
         self.encoder = tiktoken.get_encoding("cl100k_base")
-        self.log_file = "token_savings.log"  # Updated to correct filename
+        self.log_file = "token_savings.log"
         
     def count_tokens(self, text):
         """Count tokens in a piece of text"""
@@ -33,71 +32,11 @@ class TokenTracker:
             f"{'-' * 50}"
         )
         
-        # Always append to the log file
         with open(self.log_file, 'a') as f:
             f.write(log_entry + '\n')
         
         print(f"Token analysis appended to {self.log_file}")
-    
-    def generate_daily_report(self):
-        """Generate a comprehensive daily savings report."""
-        report = """
-            Token Usage Analysis Report
-            ==========================
-            """
-        # Process each day
-        for date, data in sorted(self.data.items()):
-            report += f"\n{date:%Y-%m-%d} Summary:"
-            report += f"\n{'='*50}"
-            report += f"\nTotal Files Processed: {len(data['files'])}"
-            report += f"\nTotal Interactions: {data['interactions']}"
-            report += f"\nTotal Original Tokens: {data['total_original']:,}"
-            report += f"\nTotal Summary Tokens: {data['total_summary']:,}"
-            
-            # Calculate savings
-            daily_savings = data['total_original'] - data['total_summary']
-            savings_percentage = (daily_savings / data['total_original'] * 100) if data['total_original'] > 0 else 0
-            cost_savings = daily_savings * 15 / 1_000_000  # $15 per million tokens
-            
-            report += f"\nTotal Token Savings: {daily_savings:,}"
-            report += f"\nSavings Percentage: {savings_percentage:.1f}%"
-            report += f"\nEstimated Cost Savings: ${cost_savings:.2f}"
-            
-            # Detailed breakdown
-            report += "\n\nDetailed Breakdown:"
-            report += "\n-----------------"
-            for entry in sorted(data['entries'], key=lambda x: x['time']):
-                report += f"\n{entry['time']:%H:%M:%S} - {entry['file']}"
-                report += f"\n  Original: {entry['original']:,} tokens"
-                report += f"\n  Summary: {entry['summary']:,} tokens"
-                report += f"\n  Savings: {entry['savings']:,} tokens"
-                report += f"\n"
-            
-            report += f"\n{'='*50}\n"
-            
-        # Add total statistics
-        total_original = sum(data['total_original'] for data in self.data.values())
-        total_summary = sum(data['total_summary'] for data in self.data.values())
-        total_savings = total_original - total_summary
-        total_cost_savings = total_savings * 15 / 1_000_000
-        
-        report += f"\nOverall Statistics:"
-        report += f"\n{'='*50}"
-        report += f"\nTotal Days: {len(self.data)}"
-        report += f"\nTotal Original Tokens: {total_original:,}"
-        report += f"\nTotal Summary Tokens: {total_summary:,}"
-        report += f"\nTotal Token Savings: {total_savings:,}"
-        report += f"\nTotal Cost Savings: ${total_cost_savings:.2f}"
-        
-        return report
 
-def main():
-    analyzer = TokenAnalyzer()
-    print(analyzer.generate_daily_report())
-
-if __name__ == '__main__':
-    main()
-        
 class CodeSummaryGenerator:
     def __init__(self):
         self.client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
@@ -158,14 +97,11 @@ class CodeSummaryGenerator:
         """Analyzes file based on its type."""
         ext = Path(file_path).suffix.lower()
         
-        # Read content first for critical details
         with open(file_path, 'r') as file:
             content = file.read()
             
-        # Get critical details regardless of file type
         critical_details = self.find_critical_details(content)
         
-        # Get type-specific analysis
         if ext == '.py':
             analysis = self.analyze_python_file(content)
         elif ext in ['.js', '.jsx', '.ts', '.tsx']:
@@ -175,9 +111,8 @@ class CodeSummaryGenerator:
         elif ext in ['.md', '.markdown']:
             analysis = self.analyze_markdown_file(content)
         else:
-            analysis = self.analyze_generic_file(content, file_path)  # Pass file_path here
+            analysis = self.analyze_generic_file(content, file_path)
                 
-        # Add critical details to analysis
         analysis['critical_details'] = critical_details
         return analysis
 
@@ -217,7 +152,6 @@ class CodeSummaryGenerator:
         code_lines = len([line for line in lines 
                          if line.strip() and not line.strip().startswith('//')])
         
-        # Basic function detection
         functions = []
         for line in lines:
             if 'function' in line or '=>' in line:
@@ -263,14 +197,12 @@ class CodeSummaryGenerator:
         }
 
     def generate_summary(self, file_path):
-        """Generates a summary using Claude with token tracking."""
+        """Generates a summary using Claude."""
         tracker = TokenTracker()
         
-        # Read and analyze file
         with open(file_path, 'r') as f:
             original_content = f.read()
         
-        # Count tokens in original file
         original_tokens = tracker.count_tokens(original_content)
         
         analysis = self.analyze_file(file_path)
@@ -313,10 +245,7 @@ class CodeSummaryGenerator:
         
         summary = response.content[0].text
         
-        # Count tokens in summary
         summary_tokens = tracker.count_tokens(summary)
-        
-        # Log the token analysis
         tracker.log_summary(file_path, original_tokens, summary_tokens)
         
         return summary

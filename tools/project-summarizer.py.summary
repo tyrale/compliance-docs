@@ -1,23 +1,24 @@
 # Summary
 type: python
-size: 10.6KB
-purpose: The project-summarizer.py script is a tool that generates summaries for code files based on their content and type. It uses the Anthropic API to generate the summaries and tracks token usage to avoid exceeding API limits.
+size: 9.0KB
+purpose: The project-summarizer.py script is a tool that generates concise summaries for code files, leveraging the Anthropic API to analyze the content and provide a high-level overview.
 
 ## Structure
-The script consists of several functions and two classes:
+The script is composed of several functions and two classes:
 - `update_summary`: Updates or creates a summary for a single file if it meets the size criteria.
 - `count_tokens`: Counts the tokens in a piece of text.
-- `log_summary`: Logs the token counts and savings, with strict duplication prevention.
+- `log_summary`: Logs the token counts and savings.
 - `should_summarize`: Checks if a file meets the criteria for summarization.
 - `find_critical_details`: Finds critical operational details in the code.
 - `analyze_file`: Analyzes a file based on its type.
-- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, `analyze_generic_file`: Analyze files of different types.
-- `generate_summary`: Generates a summary using the Anthropic API with token tracking.
-- `TokenTracker`: A class that tracks the token usage.
-- `CodeSummaryGenerator`: A class that generates the code summaries.
+- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, `analyze_generic_file`: Analyze files of specific types.
+- `generate_summary`: Generates a summary using the Anthropic API.
+- `TokenTracker` and `CodeSummaryGenerator` classes handle token tracking and summary generation, respectively.
 
 ## Critical Details
+- Ports: none found
 - Environment Variables: ANTHROPIC_API_KEY
+- API Endpoints: none found
 
 ## Important Notes
-The script requires the Anthropic API key to be set in the `ANTHROPIC_API_KEY` environment variable in order to generate the summaries.
+The script requires the ANTHROPIC_API_KEY environment variable to be set in order to use the Anthropic API for generating summaries.
