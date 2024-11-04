@@ -1,0 +1,14 @@
+# Summary
+size: 3.5KB
+lines: 82
+purpose: The `project-summarizer.py` script is a tool that generates a summary of a code file, including its size, lines of code, and a brief description of its functions and classes.
+
+## Functions
+- `update_summary (7 lines)`: Updates the summary information for a code file.
+- `__init__ (1 lines)`: Initializes the `CodeSummaryGenerator` class.
+- `should_summarize (4 lines)`: Determines whether a file should be summarized based on its file extension.
+- `analyze_file (8 lines)`: Analyzes a code file and generates a summary.
+- `generate_summary (7 lines)`: Generates a summary of the code file.
+
+## Classes
+- `CodeSummaryGenerator (4 lines)`: A class that generates a summary of a code file.

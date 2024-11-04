@@ -1,14 +1,12 @@
-# tools/summary_generator.py
+# tools/project-summarizer.py testing
 
 import os
-import glob
 import ast
 from pathlib import Path
 import logging
 from anthropic import Anthropic
 
-# Set minimum file size (in bytes) - e.g., 1KB = 1024 bytes
-MIN_FILE_SIZE = 1024  # Adjust this threshold as needed
+MIN_FILE_SIZE = 1024  # 1KB minimum
 
 class CodeSummaryGenerator:
     def __init__(self):
@@ -16,7 +14,6 @@ class CodeSummaryGenerator:
         
     def should_summarize(self, file_path):
         """Check if file meets criteria for summarization."""
-        # Check file size
         file_size = os.path.getsize(file_path)
         if file_size < MIN_FILE_SIZE:
             print(f"Skipping {file_path} (size: {file_size} bytes) - below threshold")
@@ -28,7 +25,6 @@ class CodeSummaryGenerator:
         with open(file_path, 'r') as file:
             content = file.read()
             
-        # Count lines of code (excluding empty lines and comments)
         code_lines = len([line for line in content.splitlines() 
                          if line.strip() and not line.strip().startswith('#')])
                          
@@ -41,13 +37,13 @@ class CodeSummaryGenerator:
                 functions.append({
                     'name': node.name,
                     'docstring': ast.get_docstring(node) or '',
-                    'lines': len(node.body)  # Approximate function length
+                    'lines': len(node.body)
                 })
             elif isinstance(node, ast.ClassDef):
                 classes.append({
                     'name': node.name,
                     'docstring': ast.get_docstring(node) or '',
-                    'lines': len(node.body)  # Approximate class length
+                    'lines': len(node.body)
                 })
                 
         return {
@@ -60,7 +56,6 @@ class CodeSummaryGenerator:
         """Generates a summary using Claude."""
         analysis = self.analyze_file(file_path)
         
-        # Add file size to summary
         file_size = os.path.getsize(file_path)
         file_size_kb = file_size / 1024
         
@@ -93,7 +88,8 @@ class CodeSummaryGenerator:
             messages=[{"role": "user", "content": prompt}]
         )
         
-        return response.content
+        # Extract the content from the response
+        return response.content[0].text
 
 def update_summary(file_path):
     """Updates or creates summary for a single file if it meets size criteria."""
