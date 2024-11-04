@@ -1,71 +1,50 @@
-require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
-const docsRouter = require('./routes/docs');
+const { staticAuthMiddleware, createStaticMiddleware } = require('./middleware/staticAuthMiddleware');
+const swaggerSetup = require('./config/swagger');
 
-// Import routes testing again again agian
+// Route imports
 const userRoutes = require('./routes/userRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const searchRoutes = require('./routes/searchRoutes');
-const sectionRoutes = require('./routes/sectionRoutes');
 const annotationRoutes = require('./routes/annotationRoutes');
+const sectionRoutes = require('./routes/sectionRoutes');
+const versionRoutes = require('./routes/versionRoutes');
 
-// Connect to databases
-connectDB();
-
+// Initialize express
 const app = express();
+
+// Connect to database
+connectDB();
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Increase timeout for file uploads
-app.use((req, res, next) => {
-  // Set longer timeout for upload routes
-  if (req.url.includes('/documents') && req.method === 'POST') {
-    res.setTimeout(300000, () => {
-      res.status(408).send('Upload request timeout');
-    });
-  } else {
-    res.setTimeout(300000, () => {
-      res.status(408).send('Request timeout');
-    });
-  }
-  next();
-});
-
-// Enable compression for responses
-const compression = require('compression');
-app.use(compression());
-
-// Static file serving for uploads
-app.use('/uploads', express.static('uploads'));
-
-// API Documentation
-app.use('/api-docs', docsRouter);
-
-// Routes
+// API routes
 app.use('/api/users', userRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/sections', sectionRoutes);
 app.use('/api/annotations', annotationRoutes);
+app.use('/api/sections', sectionRoutes);
+app.use('/api/versions', versionRoutes);
 
-// Error handler
+// Serve static files from uploads directory with authentication
+app.use('/uploads', staticAuthMiddleware, createStaticMiddleware());
+
+// Swagger documentation
+swaggerSetup(app);
+
+// Error handling middleware
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5001;
-
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
-// Increase server timeout
-server.timeout = 300000; // 5 minutes
-
-// Enable keep-alive
-server.keepAliveTimeout = 120000; // 2 minutes
-server.headersTimeout = 120000; // 2 minutes
+module.exports = app;

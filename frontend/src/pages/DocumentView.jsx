@@ -1,43 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Document, Page } from 'react-pdf';
-import { Container, Grid, Paper, Box } from '@mui/material';
-import documentService from '../services/documentService';
-import '../utils/pdfConfig'; // Import PDF configuration
+import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Grid, Paper, Box, CircularProgress, Typography } from '@mui/material';
+import { getDocument } from '../services/api';
 
 const DocumentView = () => {
   const { id } = useParams();
-  const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const navigate = useNavigate();
   const [document, setDocument] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { state: { from: `/documents/${id}` } });
+      return;
+    }
+
     const fetchDocument = async () => {
       try {
-        const response = await documentService.getDocument(id);
+        setLoading(true);
+        const response = await getDocument(id);
+        if (!response.data) {
+          throw new Error('Document not found');
+        }
         setDocument(response.data);
       } catch (error) {
         console.error('Error fetching document:', error);
+        if (error.response?.status === 401) {
+          navigate('/login', { state: { from: `/documents/${id}` } });
+          return;
+        }
+        setError(error.message || 'Failed to load document');
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (id) {
-      fetchDocument();
-    }
-  }, [id]);
+    fetchDocument();
+  }, [id, navigate]);
 
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
-  };
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  // Construct the full URL for the PDF file
-  const getPdfUrl = (fileUrl) => {
-    if (!fileUrl) return null;
-    // If it's already a full URL, return as is
-    if (fileUrl.startsWith('http')) return fileUrl;
-    // Otherwise, construct the full URL using the backend URL
-    return `http://localhost:5001${fileUrl}`;
-  };
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
+
+  if (!document) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <Typography>No document found</Typography>
+      </Box>
+    );
+  }
+
+  // Get the API URL and token
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+  const token = localStorage.getItem('token');
+  
+  // Construct the document viewing URL
+  const viewerUrl = `${baseUrl}${document.fileUrl}?token=${token}`;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -45,22 +77,23 @@ const DocumentView = () => {
         <Grid item xs={12}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ height: '80vh', overflow: 'auto' }}>
-              {document && (
-                <Document
-                  file={getPdfUrl(document.fileUrl)}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  loading="Loading PDF..."
-                >
-                  {Array.from(new Array(numPages), (el, index) => (
-                    <Page
-                      key={`page_${index + 1}`}
-                      pageNumber={index + 1}
-                      renderTextLayer={true}
-                      renderAnnotationLayer={true}
-                    />
-                  ))}
-                </Document>
-              )}
+              <object
+                data={viewerUrl}
+                type="application/pdf"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                }}
+              >
+                <embed
+                  src={viewerUrl}
+                  type="application/pdf"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              </object>
             </Box>
           </Paper>
         </Grid>

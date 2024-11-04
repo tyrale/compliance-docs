@@ -1,19 +1,23 @@
 # Summary
 type: javascript
-size: 1.8KB
-purpose: Provides a set of API functions to interact with the backend server.
+size: 2.0KB
+purpose: This file contains the API service for interacting with the backend server, providing functions to fetch, upload, update, and delete documents.
 
 ## Structure
-The file contains the following key components:
+The file defines several functions:
+- `api`: a configuration object for the Axios HTTP client, which sets the base URL for the API.
+- `getDocument(id)`: fetches a single document by its ID.
+- `getDocuments()`: fetches a list of all documents.
+- `uploadDocument(formData)`: uploads a new document.
+- `updateDocument(id, data)`: updates an existing document by its ID.
+- `deleteDocument(id)`: deletes a document by its ID.
 
-1. `api.js`: This module exports a set of functions that handle HTTP requests to the backend server. The functions include:
-   - `get(endpoint, config)`: Sends a GET request to the specified endpoint with the provided configuration.
-   - `post(endpoint, data, config)`: Sends a POST request to the specified endpoint with the provided data and configuration.
-   - `put(endpoint, data, config)`: Sends a PUT request to the specified endpoint with the provided data and configuration.
-   - `delete(endpoint, config)`: Sends a DELETE request to the specified endpoint with the provided configuration.
-2. Error handling: The module includes functions to handle errors that may occur during the API requests.
+## Critical Details
+- Ports: none found
+- Environment Variables: none found
+- API Endpoints:
+  - `/documents/{id}`: GET, PUT, DELETE
+  - `/documents`: GET, POST
 
 ## Important Notes
-1. The API functions use the `axios` library to make the HTTP requests to the backend server.
-2. The module exports the API functions, which can be imported and used in other parts of the application.
-3. The API functions accept configuration objects that can be used to customize the requests, such as setting headers or query parameters.
+This file is responsible for handling all API interactions in the frontend application, providing a consistent interface for fetching, creating, updating, and deleting documents.

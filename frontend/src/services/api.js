@@ -8,13 +8,9 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Increase default timeout
-  timeout: 300000, // 5 minutes
-  // Enable keep-alive
+  timeout: 300000,
   keepAlive: true,
-  // Enable compression
   decompress: true,
-  // Increase max content length
   maxContentLength: Infinity,
   maxBodyLength: Infinity,
 });
@@ -27,9 +23,8 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // For large file uploads, adjust the timeout
     if (config.url?.includes('/documents') && config.method === 'post') {
-      config.timeout = 300000; // 5 minutes for uploads
+      config.timeout = 300000;
       config.maxContentLength = Infinity;
       config.maxBodyLength = Infinity;
     }
@@ -45,23 +40,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle authentication errors
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
     
-    // Handle timeout errors
     if (error.code === 'ECONNABORTED') {
       error.message = 'Request timed out. Please try again.';
     }
     
-    // Handle network errors
     if (!error.response) {
       error.message = 'Network error. Please check your connection and try again.';
     }
     
-    // Handle server errors
     if (error.response?.status >= 500) {
       error.message = 'Server error. Please try again later.';
     }
@@ -69,5 +60,18 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Document endpoints
+export const getDocument = (id) => api.get(`/documents/${id}`);
+export const getDocuments = () => api.get('/documents');
+export const uploadDocument = (formData) => {
+  return api.post('/documents', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+export const updateDocument = (id, data) => api.put(`/documents/${id}`, data);
+export const deleteDocument = (id) => api.delete(`/documents/${id}`);
 
 export default api;

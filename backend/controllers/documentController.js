@@ -52,11 +52,7 @@ const uploadDocument = asyncHandler(async (req, res) => {
   document.currentVersion = version._id;
   await document.save();
 
-  // Add fileUrl to response
-  const documentObj = document.toObject();
-  documentObj.fileUrl = `/uploads/${req.file.filename}`;
-
-  res.status(201).json(documentObj);
+  res.status(201).json(document);
 });
 
 // @desc    Get all documents
@@ -72,16 +68,7 @@ const getDocuments = asyncHandler(async (req, res) => {
     .populate('currentVersion')
     .populate('uploadedBy', 'username');
 
-  // Add fileUrl to each document
-  const documentsWithUrls = documents.map(doc => {
-    const docObj = doc.toObject();
-    if (doc.fileName) {
-      docObj.fileUrl = `/uploads/${doc.fileName}`;
-    }
-    return docObj;
-  });
-
-  res.json(documentsWithUrls);
+  res.json(documents);
 });
 
 // @desc    Get document by ID
@@ -108,13 +95,45 @@ const getDocumentById = asyncHandler(async (req, res) => {
     throw new Error('Not authorized to access this document');
   }
 
-  // Add fileUrl to response
-  const documentObj = document.toObject();
-  if (document.fileName) {
-    documentObj.fileUrl = `/uploads/${document.fileName}`;
+  res.json(document);
+});
+
+// @desc    Get document content
+// @route   GET /api/documents/:id/content
+// @access  Private
+const getDocumentContent = asyncHandler(async (req, res) => {
+  const document = await Document.findById(req.params.id)
+    .populate('currentVersion');
+
+  if (!document) {
+    res.status(404);
+    throw new Error('Document not found');
   }
 
-  res.json(documentObj);
+  // Check permissions
+  if (
+    document.uploadedBy.toString() !== req.user._id.toString() &&
+    !document.permissions.readAccess.includes(req.user._id)
+  ) {
+    res.status(403);
+    throw new Error('Not authorized to access this document');
+  }
+
+  const filePath = document.currentVersion.filePath;
+  
+  try {
+    // Set the appropriate headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${document.fileName}"`);
+    
+    // Stream the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error streaming file:', error);
+    res.status(500);
+    throw new Error('Error streaming document');
+  }
 });
 
 // @desc    Update document
@@ -145,13 +164,7 @@ const updateDocument = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  // Add fileUrl to response
-  const documentObj = updatedDocument.toObject();
-  if (updatedDocument.fileName) {
-    documentObj.fileUrl = `/uploads/${updatedDocument.fileName}`;
-  }
-
-  res.json(documentObj);
+  res.json(updatedDocument);
 });
 
 // @desc    Delete document
@@ -184,7 +197,7 @@ const deleteDocument = asyncHandler(async (req, res) => {
   // Delete all related data
   await Version.deleteMany({ document: document._id });
   await Section.deleteMany({ document: document._id });
-  await Document.deleteOne({ _id: document._id });  // Changed from document.remove()
+  await Document.deleteOne({ _id: document._id });
 
   res.json({ message: 'Document removed' });
 });
@@ -193,6 +206,7 @@ module.exports = {
   uploadDocument,
   getDocuments,
   getDocumentById,
+  getDocumentContent,
   updateDocument,
   deleteDocument,
 };
