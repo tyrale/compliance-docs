@@ -13,9 +13,6 @@ import tiktoken
 MIN_FILE_SIZE = 1024  # 1KB minimum
 
 class TokenTracker:
-    # Class-level cache that persists between instances
-    _recent_logs = set()
-    
     def __init__(self):
         self.encoder = tiktoken.get_encoding("cl100k_base")
         self.log_file = "token_savings.log"
@@ -26,36 +23,30 @@ class TokenTracker:
     
     def log_summary(self, file_path, original_tokens, summary_tokens):
         """Log token counts and savings, avoiding duplicates"""
+        # Read existing logs
+        try:
+            with open(self.log_file, 'r') as f:
+                existing_logs = f.read()
+        except FileNotFoundError:
+            existing_logs = ""
+        
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Create a unique key for this log entry
-        log_key = f"{timestamp}-{file_path}-{original_tokens}-{summary_tokens}"
-        
-        # Skip if we've logged this exact entry recently
-        if log_key in TokenTracker._recent_logs:
-            return
-            
-        TokenTracker._recent_logs.add(log_key)
-        
-        # Keep cache size reasonable
-        if len(TokenTracker._recent_logs) > 100:
-            TokenTracker._recent_logs.clear()
-        
-        savings_per_read = original_tokens - summary_tokens
-        
+        # Create new log entry
         log_entry = (
             f"\n[{timestamp}] {file_path}\n"
             f"Original file tokens: {original_tokens}\n"
             f"Summary tokens: {summary_tokens}\n"
-            f"Savings per read: {savings_per_read}\n"
-            f"Break-even after {original_tokens/savings_per_read:.1f} reads\n"
+            f"Savings per read: {original_tokens - summary_tokens}\n"
+            f"Break-even after {original_tokens/(original_tokens - summary_tokens):.1f} reads\n"
             f"-" * 50
         )
         
-        with open(self.log_file, 'a') as f:
-            f.write(log_entry)
-        
-        print(f"Token analysis saved to {self.log_file}")
+        # Only write if this exact entry isn't the last one in the file
+        if log_entry.strip() not in existing_logs.strip().split('-' * 50)[-1]:
+            with open(self.log_file, 'a') as f:
+                f.write(log_entry)
+            print(f"Token analysis saved to {self.log_file}")
 
 class CodeSummaryGenerator:
     def __init__(self):
@@ -134,8 +125,8 @@ class CodeSummaryGenerator:
         elif ext in ['.md', '.markdown']:
             analysis = self.analyze_markdown_file(content)
         else:
-            analysis = self.analyze_generic_file(content)
-            
+            analysis = self.analyze_generic_file(content, file_path)  # Pass file_path here
+                
         # Add critical details to analysis
         analysis['critical_details'] = critical_details
         return analysis
@@ -212,7 +203,7 @@ class CodeSummaryGenerator:
             'headers': headers
         }
 
-    def analyze_generic_file(self, content):
+    def analyze_generic_file(self, content, file_path):
         """Analyzes any other file type."""
         lines = content.splitlines()
         return {

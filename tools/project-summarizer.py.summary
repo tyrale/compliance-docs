@@ -1,7 +1,7 @@
 # Summary
 type: python
-size: 10.0KB
-purpose: The project-summarizer.py script is a tool that generates concise summaries for code files based on their content and type.
+size: 9.9KB
+purpose: The project-summarizer.py script is a tool that generates concise summaries for code files based on their content and type. It uses the Anthropic API to generate the summaries and tracks token usage to avoid exceeding API limits.
 
 ## Structure
 The script consists of several functions and two classes:
@@ -9,15 +9,16 @@ The script consists of several functions and two classes:
 - `count_tokens`: Counts the tokens in a piece of text.
 - `log_summary`: Logs the token counts and savings, avoiding duplicates.
 - `should_summarize`: Checks if a file meets the criteria for summarization.
-- `find_critical_details`: Finds critical operational details in the code.
-- `analyze_file`: Analyzes a file based on its type.
-- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, `analyze_generic_file`: Analyze files of specific types.
-- `generate_summary`: Generates a summary using the Claude API with token tracking.
-- `TokenTracker`: A class for tracking tokens.
-- `CodeSummaryGenerator`: A class for generating code summaries.
+- `find_critical_details`: Finds critical operational details in the code, such as ports, environment variables, and API endpoints.
+- `analyze_file`: Analyzes a file based on its type (Python, JavaScript/TypeScript, JSON, Markdown, or generic).
+- `generate_summary`: Generates a summary using the Anthropic API with token tracking.
+- `TokenTracker`: A class that tracks the token usage to avoid exceeding API limits.
+- `CodeSummaryGenerator`: A class that generates the code summaries.
 
 ## Critical Details
+- Ports: none found
 - Environment Variables: ANTHROPIC_API_KEY
+- API Endpoints: none found
 
 ## Important Notes
-The script requires the ANTHROPIC_API_KEY environment variable to be set in order to use the Claude API for generating summaries.
+The script requires the ANTHROPIC_API_KEY environment variable to be set in order to use the Anthropic API for generating the summaries.
