@@ -1,5 +1,4 @@
-# tools/project-summarizer.py added the bit about tracking tokens
-
+# First part of your file up to the TokenAnalyzer class (lines 1-341)
 import os
 import ast
 from pathlib import Path
@@ -12,74 +11,40 @@ import tiktoken
 
 MIN_FILE_SIZE = 1024  # 1KB minimum
 
-# tools/token-analysis.py
-
-import re
-from datetime import datetime, timedelta
-from collections import defaultdict
-
-class TokenAnalyzer:
-    def __init__(self, log_file="token_savings_full.log"):  # Updated filename
-        self.log_file = log_file
-        self.data = self.parse_log_file()
+class TokenTracker:
+    def __init__(self):
+        self.encoder = tiktoken.get_encoding("cl100k_base")
+        self.log_file = "token_savings.log"  # Updated to correct filename
         
-    def parse_log_file(self):
-        """Parse the token savings log file and organize by date."""
-        daily_data = defaultdict(lambda: {
-            'files': set(),
-            'entries': [],
-            'total_original': 0,
-            'total_summary': 0,
-            'interactions': 0
-        })
+    def count_tokens(self, text):
+        """Count tokens in a piece of text"""
+        return len(self.encoder.encode(text))
+    
+    def log_summary(self, file_path, original_tokens, summary_tokens):
+        """Log token counts and savings"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        try:
-            with open(self.log_file, 'r') as f:
-                content = f.read()
-                entries = content.split('-' * 50)
-                
-            for entry in entries:
-                if not entry.strip():
-                    continue
-                
-                timestamp_match = re.search(r'\[(.*?)\]', entry)
-                file_match = re.search(r'\] (.*?)\n', entry)
-                original_match = re.search(r'Original file tokens: (\d+)', entry)
-                summary_match = re.search(r'Summary tokens: (\d+)', entry)
-                
-                if all([timestamp_match, file_match, original_match, summary_match]):
-                    timestamp = timestamp_match.group(1)
-                    file_path = file_match.group(1)
-                    original = int(original_match.group(1))
-                    summary = int(summary_match.group(1))
-                    
-                    date = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").date()
-                    
-                    # Store full entry details
-                    daily_data[date]['entries'].append({
-                        'time': datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").time(),
-                        'file': file_path,
-                        'original': original,
-                        'summary': summary,
-                        'savings': original - summary
-                    })
-                    
-                    daily_data[date]['files'].add(file_path)
-                    daily_data[date]['total_original'] += original
-                    daily_data[date]['total_summary'] += summary
-                    daily_data[date]['interactions'] += 1
-                
-        except FileNotFoundError:
-            print("No log file found.")
-            
-        return daily_data
+        log_entry = (
+            f"\n[{timestamp}] {file_path}\n"
+            f"Original file tokens: {original_tokens}\n"
+            f"Summary tokens: {summary_tokens}\n"
+            f"Savings per read: {original_tokens - summary_tokens}\n"
+            f"Break-even after {original_tokens/(original_tokens - summary_tokens):.1f} reads\n"
+            f"{'-' * 50}"
+        )
+        
+        # Always append to the log file
+        with open(self.log_file, 'a') as f:
+            f.write(log_entry + '\n')
+        
+        print(f"Token analysis appended to {self.log_file}")
     
     def generate_daily_report(self):
         """Generate a comprehensive daily savings report."""
         report = """
-Token Usage Analysis Report
-==========================
-"""
+            Token Usage Analysis Report
+            ==========================
+            """
         # Process each day
         for date, data in sorted(self.data.items()):
             report += f"\n{date:%Y-%m-%d} Summary:"

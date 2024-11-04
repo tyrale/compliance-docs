@@ -1,11 +1,9 @@
-# tools/token-analysis.py
-
 import re
 from datetime import datetime, timedelta
 from collections import defaultdict
 
 class TokenAnalyzer:
-    def __init__(self, log_file="token_savings.log"):
+    def __init__(self, log_file="token_savings.log"):  # Updated filename
         self.log_file = log_file
         self.data = self.parse_log_file()
         
@@ -13,10 +11,10 @@ class TokenAnalyzer:
         """Parse the token savings log file and organize by date."""
         daily_data = defaultdict(lambda: {
             'files': set(),
+            'entries': [],
             'total_original': 0,
             'total_summary': 0,
-            'interactions': 0,
-            'file_details': []  # Add this to store details for debugging
+            'interactions': 0
         })
         
         try:
@@ -27,11 +25,7 @@ class TokenAnalyzer:
             for entry in entries:
                 if not entry.strip():
                     continue
-                    
-                # Print raw entry for debugging
-                print(f"\nProcessing entry:\n{entry}")
                 
-                # Extract data using regex
                 timestamp_match = re.search(r'\[(.*?)\]', entry)
                 file_match = re.search(r'\] (.*?)\n', entry)
                 original_match = re.search(r'Original file tokens: (\d+)', entry)
@@ -45,90 +39,75 @@ class TokenAnalyzer:
                     
                     date = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").date()
                     
-                    # Print parsed data for debugging
-                    print(f"\nParsed data:")
-                    print(f"Date: {date}")
-                    print(f"File: {file_path}")
-                    print(f"Original tokens: {original}")
-                    print(f"Summary tokens: {summary}")
+                    # Store full entry details
+                    daily_data[date]['entries'].append({
+                        'time': datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").time(),
+                        'file': file_path,
+                        'original': original,
+                        'summary': summary,
+                        'savings': original - summary
+                    })
                     
-                    # Aggregate by date
                     daily_data[date]['files'].add(file_path)
                     daily_data[date]['total_original'] += original
                     daily_data[date]['total_summary'] += summary
                     daily_data[date]['interactions'] += 1
-                    daily_data[date]['file_details'].append({
-                        'file': file_path,
-                        'original': original,
-                        'summary': summary
-                    })
-                else:
-                    print(f"Failed to parse entry: {entry}")
                 
         except FileNotFoundError:
             print("No log file found.")
-        
-        # Print final aggregated data for debugging
-        print("\nFinal daily data:")
-        for date, data in daily_data.items():
-            print(f"\nDate: {date}")
-            print(f"Files: {len(data['files'])}")
-            print(f"Files list: {data['files']}")
-            print(f"Total original: {data['total_original']}")
-            print(f"Total summary: {data['total_summary']}")
             
         return daily_data
-        
-    def calculate_daily_savings(self, average_reads_per_file=5):
-        """Calculate savings for each day."""
-        daily_stats = {}
-        
-        for date, data in self.data.items():
-            # Traditional approach (reading full file each time)
-            traditional_cost = data['total_original'] * average_reads_per_file
-            
-            # With summaries approach
-            summary_cost = (data['total_original'] + 
-                          (data['total_summary'] * (average_reads_per_file - 1)))
-            
-            savings = traditional_cost - summary_cost
-            savings_percentage = (savings / traditional_cost * 100) if traditional_cost > 0 else 0
-            cost_savings = savings * 15 / 1_000_000  # $15 per million tokens
-            
-            daily_stats[date] = {
-                'files_processed': len(data['files']),
-                'interactions': data['interactions'],
-                'traditional_tokens': traditional_cost,
-                'summary_tokens': summary_cost,
-                'tokens_saved': savings,
-                'savings_percentage': savings_percentage,
-                'cost_savings': cost_savings,
-                'file_list': list(data['files'])  # Add file list for verification
-            }
-            
-        return daily_stats
     
     def generate_daily_report(self):
         """Generate a comprehensive daily savings report."""
-        daily_stats = self.calculate_daily_savings()
-        
         report = """
-Daily Token Usage Analysis Report
-===============================
+Token Usage Analysis Report
+==========================
 """
-        # Daily breakdown
-        for date, stats in sorted(daily_stats.items()):
-            report += f"\nDate: {date}"
-            report += f"\n- Files Processed: {stats['files_processed']}"
-            report += f"\n- Files List: {', '.join(stats['file_list'])}"  # Add file list
-            report += f"\n- Total Interactions: {stats['interactions']}"
-            report += f"\n- Traditional Approach Tokens: {stats['traditional_tokens']:,}"
-            report += f"\n- With Summaries Tokens: {stats['summary_tokens']:,}"
-            report += f"\n- Tokens Saved: {stats['tokens_saved']:,}"
-            report += f"\n- Savings Percentage: {stats['savings_percentage']:.1f}%"
-            report += f"\n- Cost Savings: ${stats['cost_savings']:.2f}"
-            report += "\n" + "-" * 50
+        # Process each day
+        for date, data in sorted(self.data.items()):
+            report += f"\n{date:%Y-%m-%d} Summary:"
+            report += f"\n{'='*50}"
+            report += f"\nTotal Files Processed: {len(data['files'])}"
+            report += f"\nTotal Interactions: {data['interactions']}"
+            report += f"\nTotal Original Tokens: {data['total_original']:,}"
+            report += f"\nTotal Summary Tokens: {data['total_summary']:,}"
             
+            # Calculate savings
+            daily_savings = data['total_original'] - data['total_summary']
+            savings_percentage = (daily_savings / data['total_original'] * 100) if data['total_original'] > 0 else 0
+            cost_savings = daily_savings * 15 / 1_000_000  # $15 per million tokens
+            
+            report += f"\nTotal Token Savings: {daily_savings:,}"
+            report += f"\nSavings Percentage: {savings_percentage:.1f}%"
+            report += f"\nEstimated Cost Savings: ${cost_savings:.2f}"
+            
+            # Detailed breakdown
+            report += "\n\nDetailed Breakdown:"
+            report += "\n-----------------"
+            for entry in sorted(data['entries'], key=lambda x: x['time']):
+                report += f"\n{entry['time']:%H:%M:%S} - {entry['file']}"
+                report += f"\n  Original: {entry['original']:,} tokens"
+                report += f"\n  Summary: {entry['summary']:,} tokens"
+                report += f"\n  Savings: {entry['savings']:,} tokens"
+                report += f"\n"
+            
+            report += f"\n{'='*50}\n"
+            
+        # Add total statistics
+        total_original = sum(data['total_original'] for data in self.data.values())
+        total_summary = sum(data['total_summary'] for data in self.data.values())
+        total_savings = total_original - total_summary
+        total_cost_savings = total_savings * 15 / 1_000_000
+        
+        report += f"\nOverall Statistics:"
+        report += f"\n{'='*50}"
+        report += f"\nTotal Days: {len(self.data)}"
+        report += f"\nTotal Original Tokens: {total_original:,}"
+        report += f"\nTotal Summary Tokens: {total_summary:,}"
+        report += f"\nTotal Token Savings: {total_savings:,}"
+        report += f"\nTotal Cost Savings: ${total_cost_savings:.2f}"
+        
         return report
 
 def main():
