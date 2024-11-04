@@ -22,32 +22,52 @@ class TokenTracker:
         return len(self.encoder.encode(text))
     
     def log_summary(self, file_path, original_tokens, summary_tokens):
-        """Log token counts and savings, avoiding duplicates"""
-        # Read existing logs
-        try:
-            with open(self.log_file, 'r') as f:
-                existing_logs = f.read()
-        except FileNotFoundError:
-            existing_logs = ""
-        
+        """Log token counts and savings, with strict duplication prevention"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Create new log entry
-        log_entry = (
+        # Create temp log first
+        temp_log = f"token_savings.temp"
+        final_entries = []
+        current_entry = (
             f"\n[{timestamp}] {file_path}\n"
             f"Original file tokens: {original_tokens}\n"
             f"Summary tokens: {summary_tokens}\n"
             f"Savings per read: {original_tokens - summary_tokens}\n"
             f"Break-even after {original_tokens/(original_tokens - summary_tokens):.1f} reads\n"
-            f"-" * 50
+            f"{'-' * 50}"
         )
         
-        # Only write if this exact entry isn't the last one in the file
-        if log_entry.strip() not in existing_logs.strip().split('-' * 50)[-1]:
-            with open(self.log_file, 'a') as f:
-                f.write(log_entry)
-            print(f"Token analysis saved to {self.log_file}")
-
+        # Read existing log and filter duplicates
+        try:
+            with open(self.log_file, 'r') as f:
+                content = f.read()
+                entries = content.split('-' * 50)
+                
+            # Process each entry
+            for entry in entries:
+                if entry.strip():
+                    # Extract file path from entry
+                    if file_path not in entry:  # Only keep entries for different files
+                        final_entries.append(entry.strip())
+            
+            # Add new entry
+            final_entries.append(current_entry)
+            
+            # Write all entries to temp file
+            with open(temp_log, 'w') as f:
+                f.write('\n'.join(final_entries))
+                f.write('\n')
+            
+            # Replace original file with temp file
+            os.replace(temp_log, self.log_file)
+            
+        except FileNotFoundError:
+            # If log doesn't exist, create it with just this entry
+            with open(self.log_file, 'w') as f:
+                f.write(current_entry + '\n')
+        
+        print(f"Token analysis saved to {self.log_file}")
+        
 class CodeSummaryGenerator:
     def __init__(self):
         self.client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
