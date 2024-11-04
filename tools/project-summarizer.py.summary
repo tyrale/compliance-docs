@@ -1,17 +1,20 @@
 # Summary
 type: python
-size: 5.9KB
-purpose: The `project-summarizer.py` script is a tool that generates concise summaries for code files based on their content and type.
+size: 7.9KB
+purpose: The project-summarizer.py script is a tool that generates summaries for code files based on their content and structure.
 
 ## Structure
-The script defines a `CodeSummaryGenerator` class that contains the following key functions:
+The script defines a `CodeSummaryGenerator` class that contains the following key components:
 - `update_summary`: Updates or creates a summary for a single file if it meets the size criteria.
 - `should_summarize`: Checks if a file meets the criteria for summarization.
-- `analyze_file`: Analyzes a file based on its type.
-- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, and `analyze_generic_file`: Analyze files of different types and generate summaries.
-- `generate_summary`: Generates a summary using the Claude language model.
+- `find_critical_details`: Finds critical operational details in the code, such as ports, environment variables, and API endpoints.
+- `analyze_file`: Analyzes a file based on its type (Python, JavaScript/TypeScript, JSON, Markdown, or generic).
+- `generate_summary`: Generates a summary using the Anthropic API.
+
+## Critical Details
+- Ports: none found
+- Environment Variables: ANTHROPIC_API_KEY
+- API Endpoints: none found
 
 ## Important Notes
-- The script is designed to work with various file types, including Python, JavaScript/TypeScript, JSON, and Markdown.
-- The summarization process is based on file size criteria, and the script will only generate summaries for files that meet the specified size requirements.
-- The script uses the Claude language model to generate the summaries, which may require additional setup and configuration.
+The script requires the ANTHROPIC_API_KEY environment variable to be set in order to generate summaries using the Anthropic API.

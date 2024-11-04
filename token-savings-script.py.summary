@@ -1,0 +1,15 @@
+# Summary
+type: python
+size: 1.9KB
+purpose: Analyze token savings over the specified number of days
+
+## Structure
+The script contains a single function `analyze_savings` that takes in the number of days and analyzes the token savings over that period.
+
+## Critical Details
+- Ports: none found
+- Environment Variables: none found
+- API Endpoints: none found
+
+## Important Notes
+None found.

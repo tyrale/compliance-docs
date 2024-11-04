@@ -1,4 +1,4 @@
-# tools/project-summarizer.py
+# tools/project-summarizer.py added the bit about tracking tokens
 
 import os
 import ast
@@ -6,6 +6,7 @@ from pathlib import Path
 import logging
 from anthropic import Anthropic
 import json
+import re
 
 MIN_FILE_SIZE = 1024  # 1KB minimum
 
@@ -21,26 +22,79 @@ class CodeSummaryGenerator:
             return False
         return True
 
+    def find_critical_details(self, content):
+        """Find critical operational details in code."""
+        # Find ports
+        port_patterns = [
+            r'port\s*=\s*(\d+)',
+            r'PORT\s*=\s*(\d+)',
+            r'\.listen\(\s*(\d+)',
+            r'port:\s*(\d+)',
+        ]
+        ports = []
+        for pattern in port_patterns:
+            matches = re.findall(pattern, content)
+            ports.extend(matches)
+
+        # Find environment variables
+        env_patterns = [
+            r'process\.env\.(\w+)',
+            r'os\.environ\.get\([\'"](\w+)[\'"]\)',
+            r'os\.getenv\([\'"](\w+)[\'"]\)',
+            r'ENV\[[\'"](\w+)[\'"]\]'
+        ]
+        env_vars = []
+        for pattern in env_patterns:
+            matches = re.findall(pattern, content)
+            env_vars.extend(matches)
+
+        # Find API endpoints
+        endpoint_patterns = [
+            r'@app\.route\([\'"]([^\'"]+)[\'"]\)',
+            r'app\.(get|post|put|delete)\([\'"]([^\'"]+)[\'"]\)',
+            r'router\.(get|post|put|delete)\([\'"]([^\'"]+)[\'"]\)',
+            r'endpoint:\s*[\'"]([^\'"]+)[\'"]'
+        ]
+        endpoints = []
+        for pattern in endpoint_patterns:
+            matches = re.findall(pattern, content)
+            endpoints.extend(m[1] if isinstance(m, tuple) else m for m in matches)
+
+        return {
+            'ports': list(set(ports)),
+            'env_vars': list(set(env_vars)),
+            'endpoints': list(set(endpoints))
+        }
+
     def analyze_file(self, file_path):
         """Analyzes file based on its type."""
         ext = Path(file_path).suffix.lower()
         
-        if ext == '.py':
-            return self.analyze_python_file(file_path)
-        elif ext in ['.js', '.jsx', '.ts', '.tsx']:
-            return self.analyze_js_file(file_path)
-        elif ext in ['.json']:
-            return self.analyze_json_file(file_path)
-        elif ext in ['.md', '.markdown']:
-            return self.analyze_markdown_file(file_path)
-        else:
-            return self.analyze_generic_file(file_path)
-
-    def analyze_python_file(self, file_path):
-        """Analyzes Python files."""
+        # Read content first for critical details
         with open(file_path, 'r') as file:
             content = file.read()
             
+        # Get critical details regardless of file type
+        critical_details = self.find_critical_details(content)
+        
+        # Get type-specific analysis
+        if ext == '.py':
+            analysis = self.analyze_python_file(content)
+        elif ext in ['.js', '.jsx', '.ts', '.tsx']:
+            analysis = self.analyze_js_file(content)
+        elif ext in ['.json']:
+            analysis = self.analyze_json_file(content)
+        elif ext in ['.md', '.markdown']:
+            analysis = self.analyze_markdown_file(content)
+        else:
+            analysis = self.analyze_generic_file(content)
+            
+        # Add critical details to analysis
+        analysis['critical_details'] = critical_details
+        return analysis
+
+    def analyze_python_file(self, content):
+        """Analyzes Python files."""
         code_lines = len([line for line in content.splitlines() 
                          if line.strip() and not line.strip().startswith('#')])
                          
@@ -69,17 +123,13 @@ class CodeSummaryGenerator:
             'classes': classes
         }
 
-    def analyze_js_file(self, file_path):
+    def analyze_js_file(self, content):
         """Analyzes JavaScript/TypeScript files."""
-        with open(file_path, 'r') as file:
-            content = file.read()
-            
-        # Simple analysis for now
         lines = content.splitlines()
         code_lines = len([line for line in lines 
                          if line.strip() and not line.strip().startswith('//')])
         
-        # Basic function detection (can be improved)
+        # Basic function detection
         functions = []
         for line in lines:
             if 'function' in line or '=>' in line:
@@ -91,23 +141,19 @@ class CodeSummaryGenerator:
             'functions': functions
         }
 
-    def analyze_json_file(self, file_path):
+    def analyze_json_file(self, content):
         """Analyzes JSON files."""
-        with open(file_path, 'r') as file:
-            content = json.load(file)
-            
+        json_content = json.loads(content)
         return {
             'type': 'json',
-            'structure': type(content).__name__,
-            'top_level_keys': list(content.keys()) if isinstance(content, dict) else None,
-            'length': len(content) if isinstance(content, (dict, list)) else None
+            'structure': type(json_content).__name__,
+            'top_level_keys': list(json_content.keys()) if isinstance(json_content, dict) else None,
+            'length': len(json_content) if isinstance(json_content, (dict, list)) else None
         }
 
-    def analyze_markdown_file(self, file_path):
+    def analyze_markdown_file(self, content):
         """Analyzes Markdown files."""
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
-            
+        lines = content.splitlines()
         headers = []
         for line in lines:
             if line.strip().startswith('#'):
@@ -119,11 +165,9 @@ class CodeSummaryGenerator:
             'headers': headers
         }
 
-    def analyze_generic_file(self, file_path):
+    def analyze_generic_file(self, content):
         """Analyzes any other file type."""
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
-            
+        lines = content.splitlines()
         return {
             'type': 'generic',
             'total_lines': len(lines),
@@ -154,6 +198,11 @@ class CodeSummaryGenerator:
         
         ## Structure
         (key components and their purpose)
+        
+        ## Critical Details
+        - Ports: {', '.join(analysis.get('critical_details', {}).get('ports', []) or ['none found'])}
+        - Environment Variables: {', '.join(analysis.get('critical_details', {}).get('env_vars', []) or ['none found'])}
+        - API Endpoints: {', '.join(analysis.get('critical_details', {}).get('endpoints', []) or ['none found'])}
         
         ## Important Notes
         (any critical information for developers)
