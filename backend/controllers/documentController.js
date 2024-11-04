@@ -2,11 +2,13 @@ const asyncHandler = require('express-async-handler');
 const Document = require('../models/documentModel');
 const { extractTextFromPDF } = require('../utils/pdfUtils');
 const { processDocumentText } = require('../utils/nlpUtils');
+const { client: elasticClient } = require('../config/elasticsearch');
+const fs = require('fs').promises;
 
 // @desc    Get all documents
 // @route   GET /api/documents
 // @access  Public
-const getDocuments = asyncHandler(async (req, res) => {
+exports.getDocuments = asyncHandler(async (req, res) => {
   const documents = await Document.find().sort({ createdAt: -1 });
   res.json(documents);
 });
@@ -14,7 +16,7 @@ const getDocuments = asyncHandler(async (req, res) => {
 // @desc    Get single document
 // @route   GET /api/documents/:id
 // @access  Public
-const getDocument = asyncHandler(async (req, res) => {
+exports.getDocument = asyncHandler(async (req, res) => {
   const document = await Document.findById(req.params.id);
   if (!document) {
     res.status(404);
@@ -26,7 +28,7 @@ const getDocument = asyncHandler(async (req, res) => {
 // @desc    Create document
 // @route   POST /api/documents
 // @access  Public
-const createDocument = asyncHandler(async (req, res) => {
+exports.createDocument = asyncHandler(async (req, res) => {
   if (!req.file) {
     res.status(400);
     throw new Error('Please upload a file');
@@ -48,7 +50,7 @@ const createDocument = asyncHandler(async (req, res) => {
 // @desc    Update document
 // @route   PUT /api/documents/:id
 // @access  Public
-const updateDocument = asyncHandler(async (req, res) => {
+exports.updateDocument = asyncHandler(async (req, res) => {
   const document = await Document.findById(req.params.id);
 
   if (!document) {
@@ -68,7 +70,7 @@ const updateDocument = asyncHandler(async (req, res) => {
 // @desc    Delete document
 // @route   DELETE /api/documents/:id
 // @access  Public
-const deleteDocument = asyncHandler(async (req, res) => {
+exports.deleteDocument = asyncHandler(async (req, res) => {
   const document = await Document.findById(req.params.id);
 
   if (!document) {
@@ -76,14 +78,33 @@ const deleteDocument = asyncHandler(async (req, res) => {
     throw new Error('Document not found');
   }
 
-  await document.remove();
+  // Delete the file from storage
+  if (document.filePath) {
+    try {
+      await fs.unlink(document.filePath);
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
+  }
+
+  // Delete associated sections from Elasticsearch
+  try {
+    await elasticClient.deleteByQuery({
+      index: 'sections',
+      body: {
+        query: {
+          match: {
+            documentId: document._id.toString()
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting from Elasticsearch:', error);
+  }
+
+  // Delete the document from MongoDB
+  await Document.deleteOne({ _id: document._id });
+
   res.json({ message: 'Document removed' });
 });
-
-module.exports = {
-  getDocuments,
-  getDocument,
-  createDocument,
-  updateDocument,
-  deleteDocument,
-};
