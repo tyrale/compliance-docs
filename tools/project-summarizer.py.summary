@@ -1,23 +1,23 @@
 # Summary
 type: python
-size: 9.5KB
-purpose: The project-summarizer.py script is a tool that generates concise summaries for code files based on their content and type. It uses the Anthropic API to generate the summaries and tracks the token usage to optimize the summarization process.
+size: 10.0KB
+purpose: The project-summarizer.py script is a tool that generates concise summaries for code files based on their content and type.
 
 ## Structure
 The script consists of several functions and two classes:
 - `update_summary`: Updates or creates a summary for a single file if it meets the size criteria.
 - `count_tokens`: Counts the tokens in a piece of text.
-- `log_summary`: Logs the token counts and savings.
+- `log_summary`: Logs the token counts and savings, avoiding duplicates.
 - `should_summarize`: Checks if a file meets the criteria for summarization.
 - `find_critical_details`: Finds critical operational details in the code.
 - `analyze_file`: Analyzes a file based on its type.
-- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, `analyze_generic_file`: Analyze files of different types.
-- `generate_summary`: Generates a summary using the Anthropic API with token tracking.
-- `TokenTracker`: A class that tracks the token usage.
-- `CodeSummaryGenerator`: A class that generates the code summaries.
+- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, `analyze_generic_file`: Analyze files of specific types.
+- `generate_summary`: Generates a summary using the Claude API with token tracking.
+- `TokenTracker`: A class for tracking tokens.
+- `CodeSummaryGenerator`: A class for generating code summaries.
 
 ## Critical Details
 - Environment Variables: ANTHROPIC_API_KEY
 
 ## Important Notes
-The script requires the Anthropic API key to be set in the `ANTHROPIC_API_KEY` environment variable in order to generate the summaries.
+The script requires the ANTHROPIC_API_KEY environment variable to be set in order to use the Claude API for generating summaries.

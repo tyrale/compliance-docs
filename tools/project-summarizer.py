@@ -14,17 +14,32 @@ MIN_FILE_SIZE = 1024  # 1KB minimum
 
 class TokenTracker:
     def __init__(self):
-        # Use 'cl100k_base' encoding instead of model name
         self.encoder = tiktoken.get_encoding("cl100k_base")
         self.log_file = "token_savings.log"
+        # Add cache for recent logs
+        self.recent_logs = set()
         
     def count_tokens(self, text):
         """Count tokens in a piece of text"""
         return len(self.encoder.encode(text))
     
     def log_summary(self, file_path, original_tokens, summary_tokens):
-        """Log token counts and savings"""
+        """Log token counts and savings, avoiding duplicates"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Create a unique key for this log entry
+        log_key = f"{timestamp}-{file_path}-{original_tokens}-{summary_tokens}"
+        
+        # Skip if we've logged this exact entry recently
+        if log_key in self.recent_logs:
+            return
+            
+        self.recent_logs.add(log_key)
+        
+        # Keep cache size reasonable
+        if len(self.recent_logs) > 100:
+            self.recent_logs.clear()
+        
         savings_per_read = original_tokens - summary_tokens
         
         log_entry = (
