@@ -1,35 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  Button,
-  Box,
-  Tabs,
-  Tab,
-  CircularProgress,
-  Alert,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-} from '@mui/material';
-import {
-  History as HistoryIcon,
-  Comment as CommentIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Compare as CompareIcon,
-} from '@mui/icons-material';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import HistoryIcon from '@mui/icons-material/History';
+import CommentIcon from '@mui/icons-material/Comment';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import CompareIcon from '@mui/icons-material/Compare';
 import { Document, Page, pdfjs } from 'react-pdf';
 import {
   setCurrentDocument,
@@ -40,6 +36,7 @@ import {
   deleteAnnotation,
 } from '../store/slices/documentSlice';
 import documentService from '../services/documentService';
+import api from '../services/api';
 
 // Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -167,6 +164,12 @@ const DocumentView = () => {
     }
   };
 
+  // Construct the PDF URL using the current version
+  const getPdfUrl = () => {
+    if (!currentDocument || !currentDocument.currentVersion) return null;
+    return `${api.defaults.baseURL}/documents/${id}/versions/${currentDocument.currentVersion._id}/file`;
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
@@ -208,6 +211,7 @@ const DocumentView = () => {
               startIcon={<HistoryIcon />}
               onClick={() => setActiveTab(1)}
               sx={{ mr: 1 }}
+              color="primary"
             >
               Versions
             </Button>
@@ -215,7 +219,7 @@ const DocumentView = () => {
               variant="outlined"
               startIcon={<CommentIcon />}
               onClick={() => setAnnotationMode(!annotationMode)}
-              color={annotationMode ? 'primary' : 'default'}
+              color={annotationMode ? 'primary' : 'inherit'}
             >
               {annotationMode ? 'Exit Annotation' : 'Add Annotation'}
             </Button>
@@ -227,20 +231,38 @@ const DocumentView = () => {
         <Grid item xs={12} md={9}>
           <Paper sx={{ p: 2 }}>
             <Box sx={{ mb: 2 }}>
-              <Button onClick={() => handleZoom(-0.1)}>Zoom Out</Button>
-              <Button onClick={() => handleZoom(0.1)}>Zoom In</Button>
+              <Button 
+                onClick={() => handleZoom(-0.1)}
+                variant="outlined"
+                color="primary"
+              >
+                Zoom Out
+              </Button>
+              <Button 
+                onClick={() => handleZoom(0.1)}
+                variant="outlined"
+                color="primary"
+                sx={{ ml: 1 }}
+              >
+                Zoom In
+              </Button>
               <Typography component="span" sx={{ mx: 2 }}>
                 Page {pageNumber} of {numPages}
               </Typography>
               <Button
                 disabled={pageNumber <= 1}
                 onClick={() => handlePageChange(pageNumber - 1)}
+                variant="outlined"
+                color="primary"
               >
                 Previous
               </Button>
               <Button
                 disabled={pageNumber >= numPages}
                 onClick={() => handlePageChange(pageNumber + 1)}
+                variant="outlined"
+                color="primary"
+                sx={{ ml: 1 }}
               >
                 Next
               </Button>
@@ -255,7 +277,7 @@ const DocumentView = () => {
               onClick={handleAnnotationClick}
             >
               <Document
-                file={currentDocument.url}
+                file={getPdfUrl()}
                 onLoadSuccess={handleDocumentLoadSuccess}
                 loading={<CircularProgress />}
               >
@@ -275,6 +297,8 @@ const DocumentView = () => {
             <Tabs
               value={activeTab}
               onChange={(e, newValue) => setActiveTab(newValue)}
+              textColor="primary"
+              indicatorColor="primary"
             >
               <Tab label="Annotations" />
               <Tab label="Versions" />
@@ -293,6 +317,7 @@ const DocumentView = () => {
                         <IconButton
                           edge="end"
                           onClick={() => handleDeleteAnnotation(annotation._id)}
+                          color="error"
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -316,6 +341,7 @@ const DocumentView = () => {
                         <IconButton
                           edge="end"
                           onClick={() => handleVersionChange(version._id)}
+                          color="primary"
                         >
                           <CompareIcon />
                         </IconButton>
@@ -357,7 +383,7 @@ const DocumentView = () => {
           >
             Cancel
           </Button>
-          <Button onClick={handleSaveAnnotation} variant="contained">
+          <Button onClick={handleSaveAnnotation} variant="contained" color="primary">
             Save
           </Button>
         </DialogActions>

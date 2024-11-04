@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const Document = require('../models/documentModel');
 const Version = require('../models/versionModel');
 const fs = require('fs').promises;
+const path = require('path');
 
 // @desc    Create new version of document
 // @route   POST /api/documents/:documentId/versions
@@ -109,6 +110,40 @@ const getVersion = asyncHandler(async (req, res) => {
   res.json(version);
 });
 
+// @desc    Get version file
+// @route   GET /api/documents/:documentId/versions/:versionId/file
+// @access  Private
+const getVersionFile = asyncHandler(async (req, res) => {
+  const document = await Document.findById(req.params.documentId);
+
+  if (!document) {
+    res.status(404);
+    throw new Error('Document not found');
+  }
+
+  // Check permissions
+  if (
+    document.uploadedBy.toString() !== req.user._id.toString() &&
+    !document.permissions.readAccess.includes(req.user._id)
+  ) {
+    res.status(403);
+    throw new Error('Not authorized to view this version');
+  }
+
+  const version = await Version.findOne({
+    _id: req.params.versionId,
+    document: req.params.documentId,
+  });
+
+  if (!version) {
+    res.status(404);
+    throw new Error('Version not found');
+  }
+
+  // Send the file
+  res.sendFile(path.resolve(version.filePath));
+});
+
 // @desc    Set specific version as current
 // @route   PUT /api/documents/:documentId/versions/:versionId/current
 // @access  Private
@@ -198,6 +233,7 @@ module.exports = {
   createVersion,
   getVersions,
   getVersion,
+  getVersionFile,
   setCurrentVersion,
   compareVersions,
 };

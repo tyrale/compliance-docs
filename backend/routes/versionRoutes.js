@@ -4,14 +4,15 @@ const {
   createVersion,
   getVersions,
   getVersion,
+  getVersionFile,
   setCurrentVersion,
   compareVersions,
 } = require('../controllers/versionController');
 const { protect } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { multerUpload } = require('../middleware/uploadMiddleware');
 
 router.route('/')
-  .post(protect, upload.single('document'), createVersion)
+  .post(protect, multerUpload.single('file'), createVersion)
   .get(protect, getVersions);
 
 router.route('/compare')
@@ -22,5 +23,8 @@ router.route('/:versionId')
 
 router.route('/:versionId/current')
   .put(protect, setCurrentVersion);
+
+router.route('/:versionId/file')
+  .get(protect, getVersionFile);
 
 module.exports = router;
