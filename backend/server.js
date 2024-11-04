@@ -12,7 +12,7 @@ const searchRoutes = require('./routes/searchRoutes');
 const sectionRoutes = require('./routes/sectionRoutes');
 const annotationRoutes = require('./routes/annotationRoutes');
 
-// Connect to database
+// Connect to databases
 connectDB();
 
 const app = express();
