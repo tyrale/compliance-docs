@@ -14,7 +14,8 @@ MIN_FILE_SIZE = 1024  # 1KB minimum
 
 class TokenTracker:
     def __init__(self):
-        self.encoder = tiktoken.encoding_for_model("claude-3-haiku-20240307")
+        # Use 'cl100k_base' encoding instead of model name
+        self.encoder = tiktoken.get_encoding("cl100k_base")
         self.log_file = "token_savings.log"
         
     def count_tokens(self, text):
