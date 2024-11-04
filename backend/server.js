@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const docsRouter = require('./routes/docs');
 
-// Import routes testing
+// Import routes testing again
 const userRoutes = require('./routes/userRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const searchRoutes = require('./routes/searchRoutes');
