@@ -1,14 +1,17 @@
 # Summary
-size: 3.5KB
-lines: 82
-purpose: The `project-summarizer.py` script generates a concise summary of a Python project, including file size, lines of code, and a breakdown of the functions and classes in the project.
+type: python
+size: 5.9KB
+purpose: The `project-summarizer.py` script is a tool that generates concise summaries for code files based on their content and type.
 
-## Functions
-- `update_summary (7 lines)`: Updates the project summary with the provided information.
-- `__init__ (1 lines)`: Initializes the `CodeSummaryGenerator` class.
-- `should_summarize (4 lines)`: Determines whether a file should be summarized based on its file extension.
-- `analyze_file (8 lines)`: Analyzes a Python file and extracts information about its functions and classes.
-- `generate_summary (7 lines)`: Generates the final project summary.
+## Structure
+The script defines a `CodeSummaryGenerator` class that contains the following key functions:
+- `update_summary`: Updates or creates a summary for a single file if it meets the size criteria.
+- `should_summarize`: Checks if a file meets the criteria for summarization.
+- `analyze_file`: Analyzes a file based on its type.
+- `analyze_python_file`, `analyze_js_file`, `analyze_json_file`, `analyze_markdown_file`, and `analyze_generic_file`: Analyze files of different types and generate summaries.
+- `generate_summary`: Generates a summary using the Claude language model.
 
-## Classes
-- `CodeSummaryGenerator (4 lines)`: Responsible for generating the code summary for a Python project.
+## Important Notes
+- The script is designed to work with various file types, including Python, JavaScript/TypeScript, JSON, and Markdown.
+- The summarization process is based on file size criteria, and the script will only generate summaries for files that meet the specified size requirements.
+- The script uses the Claude language model to generate the summaries, which may require additional setup and configuration.

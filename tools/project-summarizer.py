@@ -1,10 +1,11 @@
-# tools/project-summarizer.py 123
+# tools/project-summarizer.py
 
 import os
 import ast
 from pathlib import Path
 import logging
 from anthropic import Anthropic
+import json
 
 MIN_FILE_SIZE = 1024  # 1KB minimum
 
@@ -21,7 +22,22 @@ class CodeSummaryGenerator:
         return True
 
     def analyze_file(self, file_path):
-        """Extracts function/class info from Python file."""
+        """Analyzes file based on its type."""
+        ext = Path(file_path).suffix.lower()
+        
+        if ext == '.py':
+            return self.analyze_python_file(file_path)
+        elif ext in ['.js', '.jsx', '.ts', '.tsx']:
+            return self.analyze_js_file(file_path)
+        elif ext in ['.json']:
+            return self.analyze_json_file(file_path)
+        elif ext in ['.md', '.markdown']:
+            return self.analyze_markdown_file(file_path)
+        else:
+            return self.analyze_generic_file(file_path)
+
+    def analyze_python_file(self, file_path):
+        """Analyzes Python files."""
         with open(file_path, 'r') as file:
             content = file.read()
             
@@ -47,9 +63,71 @@ class CodeSummaryGenerator:
                 })
                 
         return {
+            'type': 'python',
             'total_lines': code_lines,
             'functions': functions,
             'classes': classes
+        }
+
+    def analyze_js_file(self, file_path):
+        """Analyzes JavaScript/TypeScript files."""
+        with open(file_path, 'r') as file:
+            content = file.read()
+            
+        # Simple analysis for now
+        lines = content.splitlines()
+        code_lines = len([line for line in lines 
+                         if line.strip() and not line.strip().startswith('//')])
+        
+        # Basic function detection (can be improved)
+        functions = []
+        for line in lines:
+            if 'function' in line or '=>' in line:
+                functions.append(line.strip())
+                
+        return {
+            'type': 'javascript',
+            'total_lines': code_lines,
+            'functions': functions
+        }
+
+    def analyze_json_file(self, file_path):
+        """Analyzes JSON files."""
+        with open(file_path, 'r') as file:
+            content = json.load(file)
+            
+        return {
+            'type': 'json',
+            'structure': type(content).__name__,
+            'top_level_keys': list(content.keys()) if isinstance(content, dict) else None,
+            'length': len(content) if isinstance(content, (dict, list)) else None
+        }
+
+    def analyze_markdown_file(self, file_path):
+        """Analyzes Markdown files."""
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            
+        headers = []
+        for line in lines:
+            if line.strip().startswith('#'):
+                headers.append(line.strip())
+                
+        return {
+            'type': 'markdown',
+            'total_lines': len(lines),
+            'headers': headers
+        }
+
+    def analyze_generic_file(self, file_path):
+        """Analyzes any other file type."""
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            
+        return {
+            'type': 'generic',
+            'total_lines': len(lines),
+            'extension': Path(file_path).suffix
         }
 
     def generate_summary(self, file_path):
@@ -62,23 +140,23 @@ class CodeSummaryGenerator:
         prompt = f"""Create a concise summary for {file_path}:
         
         File Stats:
+        - Type: {analysis.get('type', 'unknown')}
         - Size: {file_size_kb:.1f}KB
-        - Lines of Code: {analysis['total_lines']}
+        - Lines: {analysis.get('total_lines', 'N/A')}
         
-        Functions: {[f'{f["name"]} ({f["lines"]} lines)' for f in analysis['functions']]}
-        Classes: {[f'{c["name"]} ({c["lines"]} lines)' for c in analysis['classes']]}
+        Analysis: {json.dumps(analysis, indent=2)}
         
         Format as:
         # Summary
+        type: {analysis.get('type', 'unknown')}
         size: {file_size_kb:.1f}KB
-        lines: {analysis['total_lines']}
         purpose: (brief purpose)
         
-        ## Functions
-        - function_name (lines): purpose
+        ## Structure
+        (key components and their purpose)
         
-        ## Classes
-        - class_name (lines): purpose
+        ## Important Notes
+        (any critical information for developers)
         """
         
         response = self.client.messages.create(
@@ -88,7 +166,6 @@ class CodeSummaryGenerator:
             messages=[{"role": "user", "content": prompt}]
         )
         
-        # Extract the content from the response
         return response.content[0].text
 
 def update_summary(file_path):
