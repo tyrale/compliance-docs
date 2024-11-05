@@ -7,7 +7,6 @@
 
 ## Active Issues 🚨
 - Dashboard network errors (hook.js:608)
-- API connection refused (localhost:5001)
 - Port mismatch between frontend/backend
 - Missing features (see below)
 
@@ -20,10 +19,20 @@
   - Search functionality
   - Testing suite
   - Initial deployment
+- PDF Processing optimization
+  - Simplified to single pdf-parse library
+  - Removed conflicting dependencies
+- Docker configuration improvements
+  - Added memory limits
+  - Implemented service health checks
+  - Enhanced Elasticsearch reliability
 
 ### In Progress 🔄
-- Bug fixes for network connectivity
 - Port configuration standardization
+- Service stability improvements
+  - Elasticsearch connection reliability
+  - Container resource management
+  - Service startup orchestration
 
 ### Pending ⏳
 1. Question Answering System
@@ -42,7 +51,7 @@
    - Summary customization
 
 ## Next Actions
-1. Fix network connectivity issues
+1. Monitor service stability after configuration updates
 2. Implement HTML document support
 3. Add question answering system
 4. Enhance document viewer
@@ -67,3 +76,11 @@
   - Node.js handles all runtime application logic
   - Python handles specialized text processing utilities
 - This is not a true hybrid app as Python components are not part of runtime
+
+### PDF Processing Strategy (2024-03-19)
+- Simplified to use single pdf-parse library
+- Removed pdfjs-dist to eliminate ES Module conflicts
+- Benefits:
+  - Reduced complexity
+  - Better CommonJS compatibility
+  - Lighter dependency footprint
