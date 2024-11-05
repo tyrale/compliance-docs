@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Document = require('../models/documentModel');
 const { extractTextFromPDF } = require('../utils/pdfUtils');
-const { processDocumentText } = require('../utils/nlpUtils');
+const { generateSummary } = require('../utils/nlpUtils');
 const { client: elasticClient } = require('../config/elasticsearch');
 const fs = require('fs').promises;
 
@@ -29,22 +29,77 @@ exports.getDocument = asyncHandler(async (req, res) => {
 // @route   POST /api/documents
 // @access  Public
 exports.createDocument = asyncHandler(async (req, res) => {
-  if (!req.file) {
-    res.status(400);
-    throw new Error('Please upload a file');
+  try {
+    if (!req.file) {
+      res.status(400);
+      throw new Error('Please upload a file');
+    }
+
+    const { originalname, path } = req.file;
+    
+    // Extract text from PDF
+    let extractedText;
+    try {
+      extractedText = await extractTextFromPDF(path);
+    } catch (error) {
+      console.error('Error extracting PDF text:', error);
+      res.status(500);
+      throw new Error('Error processing PDF file');
+    }
+
+    // Generate summary (this replaces processDocumentText)
+    let processedContent;
+    try {
+      const summaryResult = await generateSummary(extractedText);
+      processedContent = {
+        fullText: extractedText,
+        summary: summaryResult.summary
+      };
+    } catch (error) {
+      console.error('Error processing document text:', error);
+      // Continue with just the extracted text if summary fails
+      processedContent = {
+        fullText: extractedText,
+        summary: ''
+      };
+    }
+
+    // Create document in MongoDB
+    const document = await Document.create({
+      title: originalname,
+      filePath: path,
+      content: processedContent,
+    });
+
+    // Index in Elasticsearch (non-blocking)
+    try {
+      await elasticClient.index({
+        index: 'documents',
+        id: document._id.toString(),
+        body: {
+          title: document.title,
+          content: processedContent.fullText,
+          summary: processedContent.summary,
+          createdAt: new Date()
+        }
+      });
+    } catch (error) {
+      // Log Elasticsearch error but don't fail the request
+      console.error('Elasticsearch indexing error:', error);
+    }
+
+    res.status(201).json(document);
+  } catch (error) {
+    // Clean up uploaded file if document creation fails
+    if (req.file && req.file.path) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error deleting file after failed upload:', unlinkError);
+      }
+    }
+    throw error;
   }
-
-  const { originalname, path } = req.file;
-  const extractedText = await extractTextFromPDF(path);
-  const processedContent = await processDocumentText(extractedText);
-
-  const document = await Document.create({
-    title: originalname,
-    filePath: path,
-    content: processedContent,
-  });
-
-  res.status(201).json(document);
 });
 
 // @desc    Update document
@@ -63,6 +118,24 @@ exports.updateDocument = asyncHandler(async (req, res) => {
     req.body,
     { new: true }
   );
+
+  // Update Elasticsearch (non-blocking)
+  try {
+    await elasticClient.update({
+      index: 'documents',
+      id: document._id.toString(),
+      body: {
+        doc: {
+          title: updatedDocument.title,
+          content: updatedDocument.content.fullText,
+          summary: updatedDocument.content.summary,
+          updatedAt: new Date()
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Elasticsearch update error:', error);
+  }
 
   res.json(updatedDocument);
 });
@@ -87,17 +160,11 @@ exports.deleteDocument = asyncHandler(async (req, res) => {
     }
   }
 
-  // Delete associated sections from Elasticsearch
+  // Delete from Elasticsearch (non-blocking)
   try {
-    await elasticClient.deleteByQuery({
-      index: 'sections',
-      body: {
-        query: {
-          match: {
-            documentId: document._id.toString()
-          }
-        }
-      }
+    await elasticClient.delete({
+      index: 'documents',
+      id: document._id.toString()
     });
   } catch (error) {
     console.error('Error deleting from Elasticsearch:', error);

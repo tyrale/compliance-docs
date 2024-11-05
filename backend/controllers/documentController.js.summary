@@ -1,12 +1,12 @@
 # Summary
 type: javascript
-size: 2.8KB
-purpose: This file contains the controller functions for managing documents in the backend application.
+size: 4.6KB
+purpose: This file contains the controller functions for managing documents in the application.
 
 ## Structure
 The file exports the following functions:
 - `getDocuments`: Retrieves a list of documents.
-- `getDocument`: Retrieves a specific document by its ID.
+- `getDocument`: Retrieves a specific document.
 - `createDocument`: Creates a new document.
 - `updateDocument`: Updates an existing document.
 - `deleteDocument`: Deletes a document.

@@ -1,9 +1,10 @@
 const pdfjsLib = require('pdfjs-dist');
 const natural = require('natural');
 const tokenizer = new natural.WordTokenizer();
+const path = require('path');
 
 // Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `${__dirname}/../../node_modules/pdfjs-dist/build/pdf.worker.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = path.join(process.cwd(), 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.js');
 
 // Extract text content from PDF
 const extractPdfContent = async (filePath) => {

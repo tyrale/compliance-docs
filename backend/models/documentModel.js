@@ -11,8 +11,14 @@ const documentSchema = mongoose.Schema(
       required: true,
     },
     content: {
-      type: String,
-      required: true,
+      fullText: {
+        type: String,
+        required: true,
+      },
+      summary: {
+        type: String,
+        default: '',
+      },
     },
     metadata: {
       type: Map,
