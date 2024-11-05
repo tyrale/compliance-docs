@@ -11,14 +11,13 @@ const documentSchema = mongoose.Schema(
       required: true,
     },
     content: {
-      fullText: {
-        type: String,
-        required: true,
-      },
-      summary: {
-        type: String,
-        default: '',
-      },
+      type: String,
+      required: true,
+    },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User'
     },
     metadata: {
       type: Map,

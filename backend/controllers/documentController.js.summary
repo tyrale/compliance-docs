@@ -1,17 +1,16 @@
 # Summary
 type: javascript
-size: 4.6KB
+size: 2.9KB
 purpose: This file contains the controller functions for managing documents in the application.
 
 ## Structure
-The file exports the following functions:
-- `getDocuments`: Retrieves a list of documents.
-- `getDocument`: Retrieves a specific document.
-- `createDocument`: Creates a new document.
-- `updateDocument`: Updates an existing document.
-- `deleteDocument`: Deletes a document.
+The file defines four main functions:
+1. `uploadDocument`: Handles the upload of a new document.
+2. `getDocuments`: Retrieves a list of all documents.
+3. `getDocument`: Retrieves a specific document by its ID.
+4. `deleteDocument`: Deletes a specific document by its ID.
 
-These functions use the `asyncHandler` middleware to handle asynchronous operations.
+These functions are defined as asynchronous handlers using the `asyncHandler` middleware, which simplifies error handling.
 
 ## Critical Details
 - Ports: none found
@@ -19,4 +18,4 @@ These functions use the `asyncHandler` middleware to handle asynchronous operati
 - API Endpoints: none found
 
 ## Important Notes
-The file does not contain any critical information for developers.
+The file does not contain any critical information that requires special attention from developers.

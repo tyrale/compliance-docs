@@ -1,21 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../middleware/uploadMiddleware');
 const {
-  getDocuments,
-  getDocument,
-  createDocument,
-  updateDocument,
-  deleteDocument,
+    uploadDocument,
+    getDocuments,
+    getDocument,
+    deleteDocument
 } = require('../controllers/documentController');
+const upload = require('../middleware/uploadMiddleware');
+const { devAuth } = require('../middleware/devAuthMiddleware');
 
-router.route('/')
-  .get(getDocuments)
-  .post(upload.single('file'), createDocument);
+// Apply dev auth middleware to all routes
+router.use(devAuth);
 
-router.route('/:id')
-  .get(getDocument)
-  .put(updateDocument)
-  .delete(deleteDocument);
+// Document routes
+router.post('/', upload.single('file'), uploadDocument);
+router.get('/', getDocuments);
+router.get('/:id', getDocument);
+router.delete('/:id', deleteDocument);
 
 module.exports = router;

@@ -57,3 +57,13 @@
 /api/annotations - Annotations
 /api/sections    - Sections
 ```
+
+## Architecture Decisions
+
+### Python/Node.js Hybrid Structure (2024-01-09)
+- Main application is fully Node.js based (Express backend + React frontend)
+- Python scripts are used only for development utilities (token analysis, project summarization)
+- Decision: Keep current structure as it leverages strengths of each language:
+  - Node.js handles all runtime application logic
+  - Python handles specialized text processing utilities
+- This is not a true hybrid app as Python components are not part of runtime
