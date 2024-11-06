@@ -1,15 +1,13 @@
 # Summary
 type: javascript
-size: 3.5KB
-purpose: The `pdfUtils.js` file provides utility functions for extracting and summarizing content from PDF files.
+size: 1.4KB
+purpose: This file contains utility functions for extracting text from PDF files.
 
 ## Structure
-The file contains the following key components:
-
-1. `extractPdfContent`: An asynchronous function that extracts the text content from a PDF file.
-2. `detectSectionHeadings`: A function that identifies potential section headings within the extracted text.
-3. `generateSectionSummary`: A function that generates a summary for each section of the text using a text summarization algorithm.
-4. `extractSections`: An asynchronous function that combines the previous functions to extract and summarize the content of a PDF file.
+The file contains three main functions:
+1. `extractTextFromPDF`: This function takes a file path as input and extracts the text content from the PDF file using the `pdf-lib` library.
+2. `pagerender`: This is a helper function used by `extractTextFromPDF` to render each page of the PDF and extract the text content.
+3. `validateExtractedText`: This function takes the extracted text as input and performs some basic validation to ensure the text is not empty or contains only whitespace characters.
 
 ## Critical Details
 - Ports: none found
@@ -17,4 +15,4 @@ The file contains the following key components:
 - API Endpoints: none found
 
 ## Important Notes
-The file does not contain any critical information for developers, as it is a utility module that can be used in other parts of the application.
+The `extractTextFromPDF` function uses the `pdf-lib` library to extract text from PDF files. Developers should ensure that this library is properly installed and configured in their project.
